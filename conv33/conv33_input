@@ -43,7 +43,7 @@ module conv33_input #(
         .rst(rst),
         .input_valid(input_valid),
         .inputbuf_read_en(inputbuf_read_en),
-        .inputbuf_load(inputbuf_load)
+        .inputbuf_load(inputbuf_load),
         .in_0_0(in_0_0), .in_0_1(in_0_1), .in_0_2(in_0_2),
         .in_1_0(in_1_0), .in_1_1(in_1_1), .in_1_2(in_1_2),
         .in_2_0(in_2_0), .in_2_1(in_2_1), .in_2_2(in_2_2),
@@ -58,7 +58,7 @@ module conv33_input #(
         .rst(rst),
         .input_valid(input_valid),
         .inputbuf_load(inputbuf_load),
-        .inputbuf_read_en(inputbuf_read_en)  ,
+        .inputbuf_read_en(inputbuf_read_en),
         .input_ready(input_ready)
     );
 
