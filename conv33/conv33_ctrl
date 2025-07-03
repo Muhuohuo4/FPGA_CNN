@@ -52,7 +52,7 @@ module conv33_ctrl (
     always @(*) begin
         nxt = state;
         case (state)
-            IDLE:    nxt = S_LOAD_W;
+            IDLE:    nxt = LOAD_W;
             LOAD_W:  nxt = weight_load_done ? LOAD_B  : LOAD_W;
             LOAD_B:  nxt = bias_load_done   ? LOAD_I  : LOAD_B;
             LOAD_I:  nxt = input_ready      ? COMPUTE : LOAD_I;

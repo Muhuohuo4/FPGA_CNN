@@ -1,16 +1,16 @@
 module conv33_input_ctrl (
     input wire clk,
     input wire rst,
-    input wire in_valid,
-    input wire data_load,
+    input wire input_valid,
+    input wire inputbuf_load,
 
-    output reg read_enable,
-    output reg compute_en
+    output reg inputbuf_read_en,
+    output reg input_ready
 );
 
     typedef enum reg [1:0] {
         IDLE,
-        WAIT_READY,
+        WAIT,
         COMPUTE
     } state_t;
 
@@ -25,16 +25,16 @@ module conv33_input_ctrl (
 
     always @(*) begin
         next = state;
-        read_enable = 0;
-        compute_en = 0;
+        inputbuf_read_en = 0;
+        input_ready = 0;
         case (state)
-            IDLE: if (in_valid) next = WAIT_READY;
-            WAIT_READY: if (data_ready) begin
-                read_enable = 1;
+            IDLE: if (input_valid) next = WAIT;
+            WAIT: if (inputbuf_load) begin
+                inputbuf_read_en = 1;
                 next = COMPUTE;
             end
             COMPUTE: begin
-                compute_en = 1;
+                input_ready = 1;
                 next = IDLE;
             end
         endcase

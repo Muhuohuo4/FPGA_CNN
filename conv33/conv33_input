@@ -28,12 +28,12 @@ module conv33_input #(
     output wire [DATA_WIDTH-1:0] out_2_2,
 
     // 控制信号输出
-    output wire compute_en
+    output wire input_ready
 );
 
     // 中间信号
-    wire data_ready;
-    wire read_en;
+    wire inputbuf_load;
+    wire inputbuf_read_en;
 
     // 数据缓存模块实例化
     conv33_input_buffer #(
@@ -41,25 +41,25 @@ module conv33_input #(
     ) u_input_buffer (
         .clk(clk),
         .rst(rst),
-        .in_valid(in_valid),
+        .input_valid(input_valid),
+        .inputbuf_read_en(inputbuf_read_en),
+        .inputbuf_load(inputbuf_load)
         .in_0_0(in_0_0), .in_0_1(in_0_1), .in_0_2(in_0_2),
         .in_1_0(in_1_0), .in_1_1(in_1_1), .in_1_2(in_1_2),
         .in_2_0(in_2_0), .in_2_1(in_2_1), .in_2_2(in_2_2),
-        .read_en(read_en),
         .out_0_0(out_0_0), .out_0_1(out_0_1), .out_0_2(out_0_2),
         .out_1_0(out_1_0), .out_1_1(out_1_1), .out_1_2(out_1_2),
         .out_2_0(out_2_0), .out_2_1(out_2_1), .out_2_2(out_2_2),
-        .data_ready(data_ready)
     );
 
     // 控制模块实例化
     conv33_input_ctrl u_input_ctrl (
         .clk(clk),
         .rst(rst),
-        .in_valid(in_valid),
-        .data_load(data_load),
-        .read_enable(read_en)  ,
-        .compute_en(compute_en)
+        .input_valid(input_valid),
+        .inputbuf_load(inputbuf_load),
+        .inputbuf_read_en(inputbuf_read_en)  ,
+        .input_ready(input_ready)
     );
 
 endmodule
