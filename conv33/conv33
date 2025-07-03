@@ -149,7 +149,7 @@ module conv33 #(
     ) u_calc(
         .clk     (clk),
         .rst     (rst),
-        .start   (conv33_en),
+        .conv33_en(conv33_en),
         .data_0_0(d00),
         .data_0_1(d01),
         .data_0_2(d02),

@@ -5,7 +5,7 @@ module conv33_calc #(
 )(
     input  wire                   clk,
     input  wire                   rst,
-    input  wire                   start,
+    input  wire                   conv33_en,
 
     // 输入数据
     input  wire [DATA_WIDTH-1:0]  data_0_0,

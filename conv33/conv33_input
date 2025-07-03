@@ -5,7 +5,7 @@ module conv33_input #(
     input  wire rst,
 
     // 来自滑窗的数据输入
-    input  wire in_valid,
+    input  wire input_valid,
     input  wire [DATA_WIDTH-1:0] in_0_0,
     input  wire [DATA_WIDTH-1:0] in_0_1,
     input  wire [DATA_WIDTH-1:0] in_0_2,
