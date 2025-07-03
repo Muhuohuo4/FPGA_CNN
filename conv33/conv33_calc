@@ -38,7 +38,7 @@ module conv33_calc #(
 );
 
     // 中间乘法结果
-    wire signed [DATA_WIDTH-1:0] mul [0:8];
+    wire signed [MUL_WIDTH-1:0] mul [0:8];
 
     assign mul[0] = data_0_0 * weight_0;
     assign mul[1] = data_0_1 * weight_1;
