@@ -33,8 +33,7 @@ module conv33 #(
     wire read_weight_en;
     wire load_bias_en;
     wire read_bias_en;
-    wire load_input_en;
-    wire read_input_en;
+    wire inputbuf_read_en;
     wire conv33_en;
     wire output_en;
 
@@ -69,8 +68,7 @@ module conv33 #(
         .read_weight_en (read_weight_en),
         .load_bias_en   (load_bias_en),
         .read_bias_en   (read_bias_en),
-        .load_input_en  (load_input_en),
-        .read_input_en  (read_input_en),
+        .inputbuf_read_en  (inputbuf_read_en),
         .conv33_en      (conv33_en),
         .output_en      (output_en)
     );

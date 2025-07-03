@@ -20,8 +20,7 @@ module conv33_ctrl (
     output reg  load_bias_en,
     output reg  read_bias_en,
 
-    output reg  load_input_en,
-    output reg  read_input_en,
+    output reg  inputbuf_read_en,
 
     output reg  conv33_en,
     output reg  output_en
@@ -69,8 +68,7 @@ module conv33_ctrl (
         read_weight_en = 0;
         load_bias_en   = 0;
         read_bias_en   = 0;
-        load_input_en  = 0;
-        read_input_en  = 0;
+        inputbuf_read_en  = 0;
         conv33_en      = 0;
         output_en      = 0;
 
@@ -84,8 +82,7 @@ module conv33_ctrl (
                 read_bias_en = bias_load_done;
             end
             LOAD_I: begin
-                load_input_en = 1;
-                read_input_en = input_ready;
+                inputbuf_read_en = 1;
             end
             COMPUTE: begin
                 conv33_en = 1;             // 触发计算
