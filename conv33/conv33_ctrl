@@ -43,7 +43,7 @@ module conv33_ctrl (
     // 状态寄存器
     always @(posedge clk or posedge rst) begin
         if (rst)
-            state <= S_IDLE;
+            state <= IDLE;
         else
             state <= nxt;
     end
@@ -59,7 +59,7 @@ module conv33_ctrl (
             COMPUTE: nxt = WAIT;
             WAIT:    nxt = calc_valid       ? OUTPUT  : WAIT;
             OUTPUT:  nxt = output_done      ? IDLE    : OUTPUT;
-            default:   nxt = IDLE;
+            default: nxt = IDLE;
         endcase
     end
 
