@@ -6,7 +6,7 @@ module conv33_output_buffer #(
 
     // 来自计算模块的输出
     input wire in_valid,
-    input wire [OUT_WIDTH-1:0] in_data,
+    input wire [OUT_WIDTH-1:0] in_data, 
 
     // 控制模块指示何时读取
     input wire read_en,
