@@ -1,0 +1,121 @@
+// conv33_ctrl.v
+// 统一控制 Conv33 中输入、权重、偏置加载，计算与输出流程
+
+module conv33_ctrl (
+    input  wire clk,
+    input  wire rst,
+
+    // 外部状态输入信号
+    input  wire weight_load_done,
+    input  wire bias_load_done,
+    input  wire input_ready,
+    input  wire calc_valid,
+    input  wire output_done, // 可选
+
+    // 控制信号输出
+    output reg  load_weight_en,
+    output reg  read_weight_en,
+
+    output reg  load_bias_en,
+    output reg  read_bias_en,
+
+    output reg  load_input_en,
+    output reg  read_input_en,
+
+    output reg  conv33_en,
+
+    output reg  output_en
+);
+
+    typedef enum reg [2:0] {
+        IDLE        = 3'd0,
+        LOAD_WEIGHT = 3'd1,
+        LOAD_BIAS   = 3'd2,
+        LOAD_INPUT  = 3'd3,
+        COMPUTE     = 3'd4,
+        WAIT_DONE   = 3'd5,
+        OUTPUT      = 3'd6
+    } state_t;
+
+    state_t state, next_state;
+
+    // 状态转移逻辑
+    always @(posedge clk or posedge rst) begin
+        if (rst)
+            state <= IDLE;
+        else
+            state <= next_state;
+    end
+
+    // 状态跳转条件
+    always @(*) begin
+        next_state = state;
+        case (state)
+            IDLE:
+                next_state = LOAD_WEIGHT;
+
+            LOAD_WEIGHT:
+                if (weight_load_done) next_state = LOAD_BIAS;
+
+            LOAD_BIAS:
+                if (bias_load_done) next_state = LOAD_INPUT;
+
+            LOAD_INPUT:
+                if (input_ready) next_state = COMPUTE;
+
+            COMPUTE:
+                next_state = WAIT_DONE;
+
+            WAIT_DONE:
+                if (calc_valid) next_state = OUTPUT;
+
+            OUTPUT:
+                next_state = IDLE;
+
+            default:
+                next_state = IDLE;
+        endcase
+    end
+
+    // 控制信号输出
+    always @(*) begin
+        // 默认拉低所有控制信号
+        load_weight_en = 0;
+        read_weight_en = 0;
+
+        load_bias_en = 0;
+        read_bias_en = 0;
+
+        load_input_en = 0;
+        read_input_en = 0;
+
+        conv33_en = 0;
+        output_en = 0;
+
+        case (state)
+            LOAD_WEIGHT: begin
+                load_weight_en = 1;
+                read_weight_en = weight_load_done;
+            end
+
+            LOAD_BIAS: begin
+                load_bias_en = 1;
+                read_bias_en = bias_load_done;
+            end
+
+            LOAD_INPUT: begin
+                load_input_en = 1;
+                read_input_en = input_ready;
+            end
+
+            COMPUTE: begin
+                conv33_en = 1; // 激活计算模块
+            end
+
+            OUTPUT: begin
+                output_en = 1;
+            end
+        endcase
+    end
+
+endmodule

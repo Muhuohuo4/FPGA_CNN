@@ -1,0 +1,24 @@
+module image_memory_rgb_sep (
+    input wire clk,
+    input wire we, // 写使能
+    input wire [8:0] row,   // 行地址 0~319
+    input wire [8:0] col,   // 列地址 0~319
+    input wire [23:0] din,  // 24位输入，RGB888
+    output reg [23:0] dout  // 24位输出，RGB888
+);
+
+    // 三个通道分别存储
+    reg [7:0] mem_r [0:319][0:319];
+    reg [7:0] mem_g [0:319][0:319];
+    reg [7:0] mem_b [0:319][0:319];
+
+    always @(posedge clk) begin
+        if (we) begin
+            mem_r[row][col] <= din[23:16];
+            mem_g[row][col] <= din[15:8];
+            mem_b[row][col] <= din[7:0];
+        end
+        dout <= {mem_r[row][col], mem_g[row][col], mem_b[row][col]};
+    end
+
+endmodule
