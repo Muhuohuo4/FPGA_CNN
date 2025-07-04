@@ -34,12 +34,29 @@ module conv33_calc #(
 
     // 输出结果
     output reg  signed [OUT_WIDTH-1:0] result,
-    output reg                         valid
+    output reg                         valid,
+    
+    output wire signed [MUL_WIDTH-1:0] mul_0,
+    output wire signed [MUL_WIDTH-1:0] mul_1,
+    output wire signed [MUL_WIDTH-1:0] mul_2,
+    output wire signed [MUL_WIDTH-1:0] mul_3,
+    output wire signed [MUL_WIDTH-1:0] mul_4,
+    output wire signed [MUL_WIDTH-1:0] mul_5,
+    output wire signed [MUL_WIDTH-1:0] mul_6,
+    output wire signed [MUL_WIDTH-1:0] mul_7,
+    output wire signed [MUL_WIDTH-1:0] mul_8,
+    output wire signed [MUL_WIDTH:0]   sum0,
+    output wire signed [MUL_WIDTH:0]   sum1, 
+    output wire signed [MUL_WIDTH:0]   sum2,
+    output wire signed [MUL_WIDTH:0]   sum3,
+    output wire signed [MUL_WIDTH+1:0] sum4,
+    output wire signed [MUL_WIDTH+1:0] sum5,
+    output wire signed [OUT_WIDTH-1:0] convsum
 );
 
     // 中间乘法结果
     wire signed [MUL_WIDTH-1:0] mul [0:8];
-
+    (* use_dsp = "yes" *) 
     assign mul[0] = data_0_0 * weight_0;
     assign mul[1] = data_0_1 * weight_1;
     assign mul[2] = data_0_2 * weight_2;
@@ -59,7 +76,6 @@ module conv33_calc #(
     wire signed [MUL_WIDTH+1:0] sum_5 = sum_2 + sum_3;  // 4~7
     wire signed [OUT_WIDTH-1:0] conv_sum = sum_4 + sum_5 + mul[8];  // 0~8;
 
-    wire [15:0] fp16_sum;
     // 同步输出
     always @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -72,5 +88,22 @@ module conv33_calc #(
             valid <= 0;
         end
     end
+
+    assign mul_0 = mul[0];
+    assign mul_1 = mul[1];
+    assign mul_2 = mul[2];
+    assign mul_3 = mul[3];
+    assign mul_4 = mul[4];
+    assign mul_5 = mul[5];
+    assign mul_6 = mul[6];
+    assign mul_7 = mul[7];
+    assign mul_8 = mul[8];
+    assign sum0= sum_0;
+    assign sum1= sum_1; 
+    assign sum2= sum_2;
+    assign sum3= sum_3;
+    assign sum4= sum_4;
+    assign sum5= sum_5;
+    assign convsum = conv_sum;
 
 endmodule

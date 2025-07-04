@@ -2,23 +2,47 @@
 
 module conv33_calc_tb;
 
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    localparam MUL_WIDTH = 16;
+    localparam OUT_WIDTH = 32;
+    // Ê±ï¿½Ó¸ï¿½Î»ï¿½ï¿½ï¿½Åºï¿½
     reg clk = 0;
     reg rst = 1;
     reg conv33_en = 0;
 
-    reg signed [7:0] data_0_0 = 0, data_0_1 = 0, data_0_2 = 0;
-    reg signed [7:0] data_1_0 = 0, data_1_1 = 0, data_1_2 = 0;
-    reg signed [7:0] data_2_0 = 0, data_2_1 = 0, data_2_2 = 0;
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İºï¿½È¨ï¿½ï¿½
+    reg signed [7:0] data_0_0, data_0_1, data_0_2;
+    reg signed [7:0] data_1_0, data_1_1, data_1_2;
+    reg signed [7:0] data_2_0, data_2_1, data_2_2;
 
-    reg signed [7:0] weight_0 = 0, weight_1 = 0, weight_2 = 0;
-    reg signed [7:0] weight_3 = 0, weight_4 = 0, weight_5 = 0;
-    reg signed [7:0] weight_6 = 0, weight_7 = 0, weight_8 = 0;
+    reg signed [7:0] weight_0, weight_1, weight_2;
+    reg signed [7:0] weight_3, weight_4, weight_5;
+    reg signed [7:0] weight_6, weight_7, weight_8;
 
-    reg signed [15:0] bias = 0;
+    reg signed [OUT_WIDTH-1:0] bias = 0; // åç½®
 
+    // ï¿½ï¿½ï¿½ï¿½Åºï¿???
     wire signed [31:0] result;
     wire valid;
 
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Û²ï¿½ï¿½ï¿½Ğ¼ï¿½Ë·ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿???
+    wire signed [MUL_WIDTH-1:0] mul_0;
+    wire signed [MUL_WIDTH-1:0] mul_1;
+    wire signed [MUL_WIDTH-1:0] mul_2;
+    wire signed [MUL_WIDTH-1:0] mul_3;
+    wire signed [MUL_WIDTH-1:0] mul_4;
+    wire signed [MUL_WIDTH-1:0] mul_5;
+    wire signed [MUL_WIDTH-1:0] mul_6;
+    wire signed [MUL_WIDTH-1:0] mul_7;
+    wire signed [MUL_WIDTH-1:0] mul_8;
+    wire signed [MUL_WIDTH:0] sum0;
+    wire signed [MUL_WIDTH:0] sum1;
+    wire signed [MUL_WIDTH:0] sum2;
+    wire signed [MUL_WIDTH:0] sum3;
+    wire signed [MUL_WIDTH+1:0] sum4;
+    wire signed [MUL_WIDTH+1:0] sum5;
+    wire signed [OUT_WIDTH-1:0] convsum;
+    // Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½
     conv33_calc uut (
         .clk(clk),
         .rst(rst),
@@ -35,39 +59,66 @@ module conv33_calc_tb;
         .bias(bias),
 
         .result(result),
-        .valid(valid)
+        .valid(valid),
+
+        .mul_0(mul_0),
+        .mul_1(mul_1),
+        .mul_2(mul_2),
+        .mul_3(mul_3),
+        .mul_4(mul_4),
+        .mul_5(mul_5),
+        .mul_6(mul_6),
+        .mul_7(mul_7),
+        .mul_8(mul_8),
+        .sum0(sum0),
+        .sum1(sum1),
+        .sum2(sum2),
+        .sum3(sum3),
+        .sum4(sum4),
+        .sum5(sum5),
+        .convsum(convsum)
     );
 
+    // Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     always #5 clk = ~clk;
 
     initial begin
-        #10 rst = 0;
+        // ï¿½ï¿½Î»
+        rst = 1;
+        #20 rst = 0;
 
-        // ¸³³õÖµ
-        data_0_0 = 1; data_0_1 = 2; data_0_2 = 3;
-        data_1_0 = 4; data_1_1 = 5; data_1_2 = 6;
-        data_2_0 = 7; data_2_1 = 8; data_2_2 = 9;
+        // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        data_0_0 = 8'b00000001; // 1
+        data_0_1 = 8'b00000010; // 2
+        data_0_2 = 8'b00000011; // 3
+        
+        data_1_0 = 8'b00000100; // 4
+        data_1_1 = 8'b00000101; // 5
+        data_1_2 = 8'b00000110; // 6
+        
+        data_2_0 = 8'b00000111; // 7
+        data_2_1 = 8'b00001000; // 8
+        data_2_2 = 8'b00001001; // 9
+        
+        weight_0 = 8'b00000001; // 1
+        weight_1 = 8'b00000001; // 1
+        weight_2 = 8'b00000001; // 1
+        
+        weight_3 = 8'b00000001; // 1
+        weight_4 = 8'b00000001; // 1
+        weight_5 = 8'b00000001; // 1
+        
+        weight_6 = 8'b00000001; // 1
+        weight_7 = 8'b00000001; // 1
+        weight_8 = 8'b00000001; // 1
 
-        weight_0 = 1; weight_1 = 1; weight_2 = 1;
-        weight_3 = 1; weight_4 = 1; weight_5 = 1;
-        weight_6 = 1; weight_7 = 1; weight_8 = 1;
 
-        bias = 0;
+        bias = 1;
 
+        // Ê¹ï¿½Ü¼ï¿½ï¿½ï¿½
         #10 conv33_en = 1;
-        #10 conv33_en = 0;
+        #100 conv33_en = 0;
 
-        #50;
-
-        // ¸Ä±äÊäÈë²âÊÔ¸ºÊı
-        data_0_0 = -1; data_0_1 = -1; data_0_2 = -1;
-        data_1_0 = -1; data_1_1 = -1; data_1_2 = -1;
-        data_2_0 = -1; data_2_1 = -1; data_2_2 = -1;
-
-        #10 conv33_en = 1;
-        #10 conv33_en = 0;
-
-        #50;
 
         $stop;
     end
