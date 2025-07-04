@@ -30,7 +30,7 @@ module conv33_calc #(
     input  wire signed [DATA_WIDTH-1:0]  weight_8,
 
     // 偏置 
-    input  wire signed [OUT_WIDTH-1:0] bias,
+    input  wire signed [MUL_WIDTH-1:0] bias,
 
     // 输出结果
     output reg  signed [OUT_WIDTH-1:0] result,
@@ -57,8 +57,9 @@ module conv33_calc #(
     wire signed [MUL_WIDTH:0] sum_3 = mul[6] + mul[7];
     wire signed [MUL_WIDTH+1:0] sum_4 = sum_0 + sum_1;  // 0~3
     wire signed [MUL_WIDTH+1:0] sum_5 = sum_2 + sum_3;  // 4~7
-    wire signed [OUT_WIDTH-1:0] conv_sum = sum_4 + sum_5 + mul[8];  // 0~8，
+    wire signed [OUT_WIDTH-1:0] conv_sum = sum_4 + sum_5 + mul[8];  // 0~8;
 
+    wire [15:0] fp16_sum;
     // 同步输出
     always @(posedge clk or posedge rst) begin
         if (rst) begin

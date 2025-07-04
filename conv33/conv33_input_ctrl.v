@@ -8,13 +8,8 @@ module conv33_input_ctrl (
     output reg input_ready
 );
 
-    typedef enum logic [1:0] {
-        IDLE,
-        WAIT,
-        COMPUTE
-    } state_t;
-
-    state_t state, next;
+    parameter IDLE = 2'd0, WAIT = 2'd1, COMPUTE = 2'd2;
+    reg [1:0] state, next;
 
     always @(posedge clk or posedge rst) begin
         if (rst)

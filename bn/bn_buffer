@@ -1,0 +1,37 @@
+module bn #(
+    parameter DATA_WIDTH = 32,
+    parameter PARAM_WIDTH = 8
+)(
+    input  wire                     clk,
+    input  wire                     rst,
+    input  wire                     valid_in,
+    input  wire [DATA_WIDTH-1:0]    data_in,          // int32
+    input  wire [PARAM_WIDTH-1:0]   bn_param_0,       // int8
+    input  wire [PARAM_WIDTH-1:0]   bn_param_1,       // int8
+    
+    output reg                      valid_out,
+    output reg  [DATA_WIDTH-1:0]    data_out     // int32
+);
+
+    wire signed [DATA_WIDTH-1:0]    data       = data_in;
+    wire signed [PARAM_WIDTH-1:0]   scale      = bn_param_0;
+    wire signed [PARAM_WIDTH-1:0]   bias     = bn_param_1;
+
+    wire signed [DATA_WIDTH+PARAM_WIDTH-1:0] mult_result;
+    
+    assign mult_result = data * scale;
+
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            data_out  <= 0;
+            valid_out <= 0;
+        end else if (valid_in) begin
+            data_out  <= (mult_result >>> 8) + bias; 
+            valid_out <= 1;
+        end else begin
+            valid_out <= 0;
+        end
+    end
+
+endmodule
