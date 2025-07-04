@@ -60,7 +60,6 @@ module conv33_input #(
         .rst(rst),
         .input_valid(input_valid),
         .inputbuf_load(inputbuf_load),
-        .inputbuf_read_en(inputbuf_read_en),
         .input_ready(input_ready)
     );
 

@@ -35,7 +35,6 @@ module conv33_output #(
         .clk(clk),
         .rst(rst),
         .in_valid(in_valid),
-        .buffer_ready(1'b1),     // 当前设计中默认 always ready
         .read_en(read_en),
         .output_valid(output_valid) // 预留对外通知使用（可选）
     );

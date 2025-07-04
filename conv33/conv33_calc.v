@@ -30,7 +30,7 @@ module conv33_calc #(
     input  wire signed [DATA_WIDTH-1:0]  weight_8,
 
     // 偏置 
-    input  wire signed [MUL_WIDTH-1:0] bias,
+    input  wire signed [OUT_WIDTH-1:0] bias,
 
     // 输出结果
     output reg  signed [OUT_WIDTH-1:0] result,

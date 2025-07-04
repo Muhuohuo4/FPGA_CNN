@@ -30,7 +30,7 @@ module conv33_weight_input #(
     reg [3:0] load_cnt;
 
     // 权重加载（串行）
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst) begin
             load_cnt    <= 0;
             weight_load <= 0;

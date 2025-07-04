@@ -4,7 +4,6 @@ module conv33_input_ctrl (
     input wire input_valid,
     input wire inputbuf_load,
 
-    output reg inputbuf_read_en,
     output reg input_ready
 );
 
@@ -20,12 +19,11 @@ module conv33_input_ctrl (
 
     always @(*) begin
         next = state;
-        inputbuf_read_en = 0;
         input_ready = 0;
         case (state)
             IDLE: if (input_valid) next = WAIT;
             WAIT: if (inputbuf_load) begin
-                inputbuf_read_en = 1;
+
                 next = COMPUTE;
             end
             COMPUTE: begin

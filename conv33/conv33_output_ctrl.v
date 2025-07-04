@@ -3,7 +3,6 @@ module conv33_output_ctrl (
     input wire rst,
 
     input wire in_valid,          // 来自计算模块
-    input wire buffer_ready,      // 保留接口
 
     output reg read_en,           // 控制 buffer 输出
     output reg output_valid       // 通知外部模块数据有效
