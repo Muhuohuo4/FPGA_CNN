@@ -75,6 +75,9 @@ module conv33_calc #(
     wire signed [MUL_WIDTH+1:0] sum_4 = sum_0 + sum_1;  // 0~3
     wire signed [MUL_WIDTH+1:0] sum_5 = sum_2 + sum_3;  // 4~7
     wire signed [OUT_WIDTH-1:0] conv_sum = sum_4 + sum_5 + mul[8];  // 0~8;
+    
+    wire signed [OUT_WIDTH-1:0] conv_sum_24_8 = conv_sum <<< 8;
+    wire signed [OUT_WIDTH-1:0] bias_ext = {{16{bias[15]}}, bias};
 
     // 同步输出
     always @(posedge clk or posedge rst) begin
@@ -82,7 +85,7 @@ module conv33_calc #(
             result <= 0;
             valid  <= 0;
         end else if (conv33_en) begin
-            result <= conv_sum + bias;
+            result <= conv_sum_24_8 + bias_ext;
             valid  <= 1;
         end else begin
             valid <= 0;
