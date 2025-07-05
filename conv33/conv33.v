@@ -1,6 +1,6 @@
 module conv33 #(
     parameter DATA_WIDTH = 8,
-    parameter BIAS_WIDTH = 32,
+    parameter BIAS_WIDTH = 16,
     parameter MUL_WIDTH  = 16,
     parameter OUT_WIDTH  = 32
 )(

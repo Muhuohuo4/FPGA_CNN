@@ -1,6 +1,7 @@
 module conv33_calc #(
     parameter DATA_WIDTH = 8,
     parameter MUL_WIDTH  = 16,
+    parameter BIAS_WIDTH = 16,
     parameter OUT_WIDTH  = 32
 )(
     input  wire                   clk,
@@ -30,7 +31,7 @@ module conv33_calc #(
     input  wire signed [DATA_WIDTH-1:0]  weight_8,
 
     // 偏置 
-    input  wire signed [OUT_WIDTH-1:0] bias,
+    input  wire signed [BIAS_WIDTH-1:0] bias,
 
     // 输出结果
     output reg  signed [OUT_WIDTH-1:0] result,
@@ -50,13 +51,12 @@ module conv33_calc #(
     output wire signed [MUL_WIDTH:0]   sum2,
     output wire signed [MUL_WIDTH:0]   sum3,
     output wire signed [MUL_WIDTH+1:0] sum4,
-    output wire signed [MUL_WIDTH+1:0] sum5,
-    output wire signed [OUT_WIDTH-1:0] convsum
+    output wire signed [MUL_WIDTH+1:0] sum5
 );
 
     // 中间乘法结果
     wire signed [MUL_WIDTH-1:0] mul [0:8];
-    (* use_dsp = "yes" *) 
+
     assign mul[0] = data_0_0 * weight_0;
     assign mul[1] = data_0_1 * weight_1;
     assign mul[2] = data_0_2 * weight_2;
@@ -104,6 +104,5 @@ module conv33_calc #(
     assign sum3= sum_3;
     assign sum4= sum_4;
     assign sum5= sum_5;
-    assign convsum = conv_sum;
 
 endmodule

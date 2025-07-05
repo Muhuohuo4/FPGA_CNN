@@ -1,10 +1,10 @@
 `timescale 1ns / 1ps
 
 module conv33_calc_tb;
-
     // ��������
-    localparam MUL_WIDTH = 16;
-    localparam OUT_WIDTH = 32;
+    localparam MUL_WIDTH  = 16;
+    localparam OUT_WIDTH  = 32;
+    localparam BIAS_WIDTH = 16;
     // ʱ�Ӹ�λ���ź�
     reg clk = 0;
     reg rst = 1;
@@ -19,13 +19,13 @@ module conv33_calc_tb;
     reg signed [7:0] weight_3, weight_4, weight_5;
     reg signed [7:0] weight_6, weight_7, weight_8;
 
-    reg signed [OUT_WIDTH-1:0] bias = 0; // 偏置
+    reg signed [BIAS_WIDTH-1:0] bias = 0; // 偏置
 
-    // ����ź�???
+    // ����ź�????
     wire signed [31:0] result;
     wire valid;
 
-    // �����۲���м�˷�����˿�???
+    // �����۲���м�˷�����˿�????
     wire signed [MUL_WIDTH-1:0] mul_0;
     wire signed [MUL_WIDTH-1:0] mul_1;
     wire signed [MUL_WIDTH-1:0] mul_2;
@@ -41,7 +41,6 @@ module conv33_calc_tb;
     wire signed [MUL_WIDTH:0] sum3;
     wire signed [MUL_WIDTH+1:0] sum4;
     wire signed [MUL_WIDTH+1:0] sum5;
-    wire signed [OUT_WIDTH-1:0] convsum;
     // ʵ��������ģ��
     conv33_calc uut (
         .clk(clk),
@@ -75,8 +74,7 @@ module conv33_calc_tb;
         .sum2(sum2),
         .sum3(sum3),
         .sum4(sum4),
-        .sum5(sum5),
-        .convsum(convsum)
+        .sum5(sum5)
     );
 
     // ʱ������
