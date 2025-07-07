@@ -1,8 +1,8 @@
 module conv33 #(
     parameter DATA_WIDTH = 8,
-    parameter BIAS_WIDTH = 16,
+    parameter BIAS_WIDTH = 32,
     parameter MUL_WIDTH  = 16,
-    parameter OUT_WIDTH  = 32
+    parameter OUT_WIDTH  = 8
 )(
     input  wire                   clk,
     input  wire                   rst,
@@ -10,6 +10,7 @@ module conv33 #(
     // 权重偏置输入
     input  wire [DATA_WIDTH-1:0]  weight_data,
     input  wire [BIAS_WIDTH-1:0]  bias_data,
+    input  wire [BIAS_WIDTH-1:0]  scale_data,
 
     // 输入数据
     input  wire                   input_valid,
@@ -33,6 +34,8 @@ module conv33 #(
     wire read_weight_en;
     wire load_bias_en;
     wire read_bias_en;
+    wire load_scale_en;
+    wire read_scale_en;
     wire inputbuf_read_en;
     wire conv33_en;
     wire output_en;
@@ -47,30 +50,35 @@ module conv33 #(
     // 权重缓存
     wire [DATA_WIDTH-1:0] w0, w1, w2, w3, w4, w5, w6, w7, w8;
     wire                  weight_valid;
-
     // 偏置缓存
     wire [BIAS_WIDTH-1:0] bias;
     wire                  bias_valid;
+    // 缩放系数缓存
+    wire [BIAS_WIDTH-1:0] scale;
+    wire                  scale_valid;
 
-    // 输入数据
+    // 输入数据缓存
     wire [DATA_WIDTH-1:0] d00, d01, d02, d10, d11, d12, d20, d21, d22;
 
     // 控制模块
     conv33_ctrl u_ctrl(
-        .clk            (clk),
-        .rst            (rst),
-        .weight_load_done(weight_load_done),
-        .bias_load_done (bias_load_done),
-        .input_ready    (input_ready),
-        .calc_valid     (calc_valid),
-        .output_done    (output_done),
-        .load_weight_en (load_weight_en),
-        .read_weight_en (read_weight_en),
-        .load_bias_en   (load_bias_en),
-        .read_bias_en   (read_bias_en),
-        .inputbuf_read_en  (inputbuf_read_en),
-        .conv33_en      (conv33_en),
-        .output_en      (output_en)
+        .clk                (clk),
+        .rst                (rst),
+        .weight_load_done   (weight_load_done),
+        .bias_load_done     (bias_load_done),
+        .scale_load_done    (scale_load_done),
+        .input_ready        (input_ready),
+        .calc_valid         (calc_valid),
+        .output_done        (output_done),
+        .load_weight_en     (load_weight_en),
+        .read_weight_en     (read_weight_en),
+        .load_bias_en       (load_bias_en),
+        .read_bias_en       (read_bias_en),
+        .load_scale_en      (load_scale_en),
+        .read_scale_en      (read_scale_en),
+        .inputbuf_read_en   (inputbuf_read_en),
+        .conv33_en          (conv33_en),
+        .output_en          (output_en)
     );
 
     // 权重模块
@@ -107,6 +115,20 @@ module conv33 #(
         .bias     (bias),
         .valid    (bias_valid),
         .bias_load(bias_load_done)
+    );
+
+    // 缩放系数模块
+    conv33_scale_input #(
+        .SCALE_WIDTH(BIAS_WIDTH)
+    ) u_scale_input(
+        .clk      (clk),
+        .rst      (rst),
+        .load_en  (load_scale_en),
+        .load_data(scale_data),
+        .read_en  (read_scale_en),
+        .scale    (scale),
+        .valid    (scale_valid),
+        .scale_load(scale_load_done)
     );
 
     // 输入模块

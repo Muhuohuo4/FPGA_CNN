@@ -1,7 +1,7 @@
 module conv33_calc #(
     parameter DATA_WIDTH = 8,
     parameter MUL_WIDTH  = 16,
-    parameter BIAS_WIDTH = 16,
+    parameter BIAS_WIDTH = 32,
     parameter OUT_WIDTH  = 32
 )(
     input  wire                   clk,
@@ -33,9 +33,12 @@ module conv33_calc #(
     // 偏置 
     input  wire signed [BIAS_WIDTH-1:0] bias,
 
+    // 缩放系数
+    input  wire signed [BIAS_WIDTH-1:0] scale,
+
     // 输出结果
-    output reg  signed [OUT_WIDTH-1:0] result,
-    output reg                         valid,
+    output reg  signed [DATA_WIDTH-1:0] result,
+    output reg                          valid,
     
     output wire signed [MUL_WIDTH-1:0] mul_0,
     output wire signed [MUL_WIDTH-1:0] mul_1,
@@ -53,6 +56,22 @@ module conv33_calc #(
     output wire signed [MUL_WIDTH+1:0] sum4,
     output wire signed [MUL_WIDTH+1:0] sum5
 );
+
+    assign mul_0 = mul[0];
+    assign mul_1 = mul[1];
+    assign mul_2 = mul[2];
+    assign mul_3 = mul[3];
+    assign mul_4 = mul[4];
+    assign mul_5 = mul[5];
+    assign mul_6 = mul[6];
+    assign mul_7 = mul[7];
+    assign mul_8 = mul[8];
+    assign sum0= sum_0;
+    assign sum1= sum_1; 
+    assign sum2= sum_2;
+    assign sum3= sum_3;
+    assign sum4= sum_4;
+    assign sum5= sum_5;
 
     // 中间乘法结果
     wire signed [MUL_WIDTH-1:0] mul [0:8];
@@ -75,37 +94,20 @@ module conv33_calc #(
     wire signed [MUL_WIDTH+1:0] sum_4 = sum_0 + sum_1;  // 0~3
     wire signed [MUL_WIDTH+1:0] sum_5 = sum_2 + sum_3;  // 4~7
     wire signed [OUT_WIDTH-1:0] conv_sum = sum_4 + sum_5 + mul[8];  // 0~8;
-    
-    wire signed [OUT_WIDTH-1:0] conv_sum_24_8 = conv_sum <<< 8;
-    wire signed [OUT_WIDTH-1:0] bias_ext = {{16{bias[15]}}, bias};
-
+    wire signed [OUT_WIDTH-1:0] result_bais <= conv_sum + bias;
+    wire signed [OUT_WIDTH-1:0] result_scale = result_bais * scale;
     // 同步输出
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             result <= 0;
             valid  <= 0;
         end else if (conv33_en) begin
-            result <= conv_sum_24_8 + bias_ext;
+            result <= result_scale[23:16];
             valid  <= 1;
         end else begin
             valid <= 0;
         end
     end
 
-    assign mul_0 = mul[0];
-    assign mul_1 = mul[1];
-    assign mul_2 = mul[2];
-    assign mul_3 = mul[3];
-    assign mul_4 = mul[4];
-    assign mul_5 = mul[5];
-    assign mul_6 = mul[6];
-    assign mul_7 = mul[7];
-    assign mul_8 = mul[8];
-    assign sum0= sum_0;
-    assign sum1= sum_1; 
-    assign sum2= sum_2;
-    assign sum3= sum_3;
-    assign sum4= sum_4;
-    assign sum5= sum_5;
 
 endmodule
