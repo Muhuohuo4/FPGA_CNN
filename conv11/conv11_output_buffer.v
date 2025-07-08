@@ -1,4 +1,4 @@
-module conv33_output_buffer #(
+module conv11_output_buffer #(
     parameter OUT_WIDTH = 8
 )(
     input wire clk,

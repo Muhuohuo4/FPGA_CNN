@@ -1,4 +1,4 @@
-module conv33_output #(
+module conv11_output #(
     parameter OUT_WIDTH = 8
 )(
     input  wire clk,
@@ -18,7 +18,7 @@ module conv33_output #(
     wire output_valid;
 
     // 输出缓存
-    conv33_output_buffer #(
+    conv11_output_buffer #(
         .OUT_WIDTH(OUT_WIDTH)
     ) u_output_buffer (
         .clk(clk),
@@ -31,7 +31,7 @@ module conv33_output #(
     );
 
     // 输出控制器
-    conv33_output_ctrl u_output_ctrl (
+    conv11_output_ctrl u_output_ctrl (
         .clk(clk),
         .rst(rst),
         .in_valid(in_valid),

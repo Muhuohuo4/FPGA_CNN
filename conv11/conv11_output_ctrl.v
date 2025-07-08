@@ -1,4 +1,4 @@
-module conv33_output_ctrl (
+module conv11_output_ctrl (
     input wire clk,
     input wire rst,
 
