@@ -1,4 +1,4 @@
-module conv33_scale_input #(
+module conv11_scale_input #(
     parameter SCALE_WIDTH = 24
 )(
     input  wire                  clk,

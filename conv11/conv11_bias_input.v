@@ -1,4 +1,4 @@
-module conv33_bias_input #(
+module conv11_bias_input #(
     parameter BIAS_WIDTH = 32
 )(
     input  wire                  clk,
