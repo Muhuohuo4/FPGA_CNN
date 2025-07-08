@@ -1,4 +1,4 @@
-module conv33_input_ctrl (
+module conv11_input_ctrl (
     input wire clk,
     input wire rst,
     input wire input_valid,
