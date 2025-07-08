@@ -43,6 +43,7 @@ module conv33 #(
     // 状态信号
     wire weight_load_done;
     wire bias_load_done;
+    wire scale_load_done;
     wire input_ready;
     wire calc_valid;
     wire output_done;
