@@ -94,9 +94,9 @@ module conv33_calc #(
     wire signed [MUL_WIDTH+1:0] sum_4 = sum_0 + sum_1;  // 0~3
     wire signed [MUL_WIDTH+1:0] sum_5 = sum_2 + sum_3;  // 4~7
     wire signed [OUT_WIDTH-1:0] conv_sum = sum_4 + sum_5 + mul[8];  // 0~8;
-    wire signed [OUT_WIDTH-1:0] result_bias <= conv_sum + bias;
+    wire signed [OUT_WIDTH-1:0] result_bias = conv_sum + bias;
     wire signed [OUT_WIDTH-1:0] result_scale = result_bias * scale;
-    wire signed [DATA_WIDTH-1:0] result_8 <= result_scale[23:16];
+    wire signed [DATA_WIDTH-1:0] result_8 = result_scale[23:16];
 
     // 同步输出
     always @(posedge clk or posedge rst) begin

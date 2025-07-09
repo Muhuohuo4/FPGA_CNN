@@ -35,7 +35,7 @@ module rom_ctrl (
     output wire [7:0]  data_out_ch6
 );
 
-    bram_channel u_ch1 (
+    channel_1 u_ch1 (
         .clk(clk),
         .we(we1),
         .addr_write(addr_write_ch1),
@@ -44,7 +44,7 @@ module rom_ctrl (
         .data_out(data_out_ch1)
     );
 
-    bram_channel u_ch2 (
+    channel_2 u_ch2 (
         .clk(clk),
         .we(we2),
         .addr_write(addr_write_ch2),
@@ -53,7 +53,7 @@ module rom_ctrl (
         .data_out(data_out_ch2)
     );
 
-    bram_channel u_ch3 (
+    channel_3 u_ch3 (
         .clk(clk),
         .we(we3),
         .addr_write(addr_write_ch3),
@@ -62,7 +62,7 @@ module rom_ctrl (
         .data_out(data_out_ch3)
     );
 
-    bram_channel u_ch4 (
+    channel_4 u_ch4 (
         .clk(clk),
         .we(we4),
         .addr_write(addr_write_ch4),
@@ -71,7 +71,7 @@ module rom_ctrl (
         .data_out(data_out_ch4)
     );
 
-    bram_channel u_ch5 (
+    channel_5 u_ch5 (
         .clk(clk),
         .we(we5),
         .addr_write(addr_write_ch5),
@@ -80,7 +80,7 @@ module rom_ctrl (
         .data_out(data_out_ch5)
     );
 
-    bram_channel u_ch6 (
+    channel_6 u_ch6 (
         .clk(clk),
         .we(we6),
         .addr_write(addr_write_ch6),
