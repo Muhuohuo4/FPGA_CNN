@@ -1,4 +1,4 @@
-module conv33_input #(
+module conv11_input #(
     parameter DATA_WIDTH = 8
 )(
     input  wire clk,
@@ -7,38 +7,20 @@ module conv33_input #(
     // 来自滑窗的数据输入
     input  wire input_valid,
     input  wire inputbuf_read_en,
-    input  wire [DATA_WIDTH-1:0] in_0_0,
-    input  wire [DATA_WIDTH-1:0] in_0_1,
-    input  wire [DATA_WIDTH-1:0] in_0_2,
-    input  wire [DATA_WIDTH-1:0] in_1_0,
-    input  wire [DATA_WIDTH-1:0] in_1_1,
-    input  wire [DATA_WIDTH-1:0] in_1_2,
-    input  wire [DATA_WIDTH-1:0] in_2_0,
-    input  wire [DATA_WIDTH-1:0] in_2_1,
-    input  wire [DATA_WIDTH-1:0] in_2_2,
+    input  wire [DATA_WIDTH-1:0] data_in,
 
     // 输出给卷积计算模块
     output wire [DATA_WIDTH-1:0] out_0_0,
-    output wire [DATA_WIDTH-1:0] out_0_1,
-    output wire [DATA_WIDTH-1:0] out_0_2,
-    output wire [DATA_WIDTH-1:0] out_1_0,
-    output wire [DATA_WIDTH-1:0] out_1_1,
-    output wire [DATA_WIDTH-1:0] out_1_2,
-    output wire [DATA_WIDTH-1:0] out_2_0,
-    output wire [DATA_WIDTH-1:0] out_2_1,
-    output wire [DATA_WIDTH-1:0] out_2_2,
 
     // 控制信号输出
     output wire input_ready
-
 );
 
     // 中间信号
     wire inputbuf_load;
 
-
     // 数据缓存模块实例化
-    conv33_input_buffer #(
+    conv11_input_buffer #(
         .DATA_WIDTH(DATA_WIDTH)
     ) u_input_buffer (
         .clk(clk),
@@ -46,16 +28,12 @@ module conv33_input #(
         .input_valid(input_valid),
         .inputbuf_read_en(inputbuf_read_en),
         .inputbuf_load(inputbuf_load),
-        .in_0_0(in_0_0), .in_0_1(in_0_1), .in_0_2(in_0_2),
-        .in_1_0(in_1_0), .in_1_1(in_1_1), .in_1_2(in_1_2),
-        .in_2_0(in_2_0), .in_2_1(in_2_1), .in_2_2(in_2_2),
-        .out_0_0(out_0_0), .out_0_1(out_0_1), .out_0_2(out_0_2),
-        .out_1_0(out_1_0), .out_1_1(out_1_1), .out_1_2(out_1_2),
-        .out_2_0(out_2_0), .out_2_1(out_2_1), .out_2_2(out_2_2)
+        .data_in(data_in),
+        .out_0_0(out_0_0)
     );
 
     // 控制模块实例化
-    conv33_input_ctrl u_input_ctrl (
+    conv11_input_ctrl u_input_ctrl (
         .clk(clk),
         .rst(rst),
         .input_valid(input_valid),

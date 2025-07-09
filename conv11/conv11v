@@ -1,4 +1,4 @@
-module conv33 #(
+module conv11 #(
     parameter DATA_WIDTH = 8,
     parameter BIAS_WIDTH = 32,
     parameter MUL_WIDTH  = 16,
@@ -14,15 +14,7 @@ module conv33 #(
 
     // 输入数据
     input  wire                   input_valid,
-    input  wire [DATA_WIDTH-1:0]  in_0_0,
-    input  wire [DATA_WIDTH-1:0]  in_0_1,
-    input  wire [DATA_WIDTH-1:0]  in_0_2,
-    input  wire [DATA_WIDTH-1:0]  in_1_0,
-    input  wire [DATA_WIDTH-1:0]  in_1_1,
-    input  wire [DATA_WIDTH-1:0]  in_1_2,
-    input  wire [DATA_WIDTH-1:0]  in_2_0,
-    input  wire [DATA_WIDTH-1:0]  in_2_1,
-    input  wire [DATA_WIDTH-1:0]  in_2_2,
+    input  wire [DATA_WIDTH-1:0]  in_data,
 
     // 卷积结果
     output wire                   out_valid,
@@ -37,7 +29,7 @@ module conv33 #(
     wire load_scale_en;
     wire read_scale_en;
     wire inputbuf_read_en;
-    wire conv33_en;
+    wire conv11_en;
     wire output_en;
 
     // 状态信号
@@ -49,7 +41,7 @@ module conv33 #(
     wire output_done;
 
     // 权重缓存
-    wire [DATA_WIDTH-1:0] w0, w1, w2, w3, w4, w5, w6, w7, w8;
+    wire [DATA_WIDTH-1:0] w0;
     wire                  weight_valid;
     // 偏置缓存
     wire [BIAS_WIDTH-1:0] bias;
@@ -59,10 +51,10 @@ module conv33 #(
     wire                  scale_valid;
 
     // 输入数据缓存
-    wire [DATA_WIDTH-1:0] d00, d01, d02, d10, d11, d12, d20, d21, d22;
+    wire [DATA_WIDTH-1:0] d00;
 
     // 控制模块
-    conv33_ctrl u_ctrl(
+    conv11_ctrl u_ctrl(
         .clk                (clk),
         .rst                (rst),
         .weight_load_done   (weight_load_done),
@@ -78,12 +70,12 @@ module conv33 #(
         .load_scale_en      (load_scale_en),
         .read_scale_en      (read_scale_en),
         .inputbuf_read_en   (inputbuf_read_en),
-        .conv33_en          (conv33_en),
+        .conv11_en          (conv11_en),
         .output_en          (output_en)
     );
 
     // 权重模块
-    conv33_weight_input #(
+    conv11_weight_input #(
         .DATA_WIDTH(DATA_WIDTH)
     ) u_weight_input(
         .clk        (clk),
@@ -92,20 +84,12 @@ module conv33 #(
         .load_data  (weight_data),
         .read_en    (read_weight_en),
         .weight_0   (w0),
-        .weight_1   (w1),
-        .weight_2   (w2),
-        .weight_3   (w3),
-        .weight_4   (w4),
-        .weight_5   (w5),
-        .weight_6   (w6),
-        .weight_7   (w7),
-        .weight_8   (w8),
         .weight_load(weight_load_done),
         .valid      (weight_valid)
     );
 
     // 偏置模块
-    conv33_bias_input #(
+    conv11_bias_input #(
         .BIAS_WIDTH(BIAS_WIDTH)
     ) u_bias_input(
         .clk      (clk),
@@ -119,7 +103,7 @@ module conv33 #(
     );
 
     // 缩放系数模块
-    conv33_scale_input #(
+    conv11_scale_input #(
         .SCALE_WIDTH(BIAS_WIDTH)
     ) u_scale_input(
         .clk      (clk),
@@ -133,30 +117,14 @@ module conv33 #(
     );
 
     // 输入模块
-    conv33_input #(
+    conv11_input #(
         .DATA_WIDTH(DATA_WIDTH)
     ) u_input(
         .clk     (clk),
         .rst     (rst),
         .input_valid(input_valid),
-        .in_0_0  (in_0_0),
-        .in_0_1  (in_0_1),
-        .in_0_2  (in_0_2),
-        .in_1_0  (in_1_0),
-        .in_1_1  (in_1_1),
-        .in_1_2  (in_1_2),
-        .in_2_0  (in_2_0),
-        .in_2_1  (in_2_1),
-        .in_2_2  (in_2_2),
+        .data_in (in_data),
         .out_0_0 (d00),
-        .out_0_1 (d01),
-        .out_0_2 (d02),
-        .out_1_0 (d10),
-        .out_1_1 (d11),
-        .out_1_2 (d12),
-        .out_2_0 (d20),
-        .out_2_1 (d21),
-        .out_2_2 (d22),
         .input_ready(input_ready),
         .inputbuf_read_en(inputbuf_read_en)
     );
@@ -164,39 +132,24 @@ module conv33 #(
     //计算模块
     wire [OUT_WIDTH-1:0] result;
 
-    conv33_calc #(
+    conv11_calc #(
         .DATA_WIDTH(DATA_WIDTH),
         .MUL_WIDTH (MUL_WIDTH),
         .OUT_WIDTH (OUT_WIDTH)
     ) u_calc(
         .clk     (clk),
         .rst     (rst),
-        .conv33_en(conv33_en),
+        .conv11_en(conv11_en),
         .data_0_0(d00),
-        .data_0_1(d01),
-        .data_0_2(d02),
-        .data_1_0(d10),
-        .data_1_1(d11),
-        .data_1_2(d12),
-        .data_2_0(d20),
-        .data_2_1(d21),
-        .data_2_2(d22),
         .weight_0(w0),
-        .weight_1(w1),
-        .weight_2(w2),
-        .weight_3(w3),
-        .weight_4(w4),
-        .weight_5(w5),
-        .weight_6(w6),
-        .weight_7(w7),
-        .weight_8(w8),
         .bias    (bias),
+        .scale   (scale),
         .result  (result),
         .valid   (calc_valid)
     );
 
     //输出模块
-    conv33_output #(
+    conv11_output #(
         .OUT_WIDTH(OUT_WIDTH)
     ) u_output(
         .clk     (clk),

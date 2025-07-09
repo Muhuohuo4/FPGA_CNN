@@ -1,12 +1,12 @@
-// conv33_ctrl.v
-// 控制 3x3 卷积模块整体流程：依次加载权重�?�偏置和输入数据�?
+// conv11_ctrl.v
+// 控制 1*1 卷积模块整体流程：依次加载权重�?�偏置和输入数据�?
 // 然后启动计算并在结果输出后重新回到空闲状态�??
 
-module conv33_ctrl (
+module conv11_ctrl (
     input  wire clk,
     input  wire rst,
 
-    // 来自各子模块的状态信�?
+    // 来自各子模块的状态信号
     input  wire weight_load_done,
     input  wire bias_load_done,
     input  wire scale_load_done,
@@ -25,7 +25,7 @@ module conv33_ctrl (
 
     output reg  inputbuf_read_en,
 
-    output reg  conv33_en,
+    output reg  conv11_en,
     output reg  output_en
 );
 
@@ -73,7 +73,7 @@ module conv33_ctrl (
         load_scale_en  = 0;
         read_scale_en  = 0;
         inputbuf_read_en  = 0;
-        conv33_en      = 0;
+        conv11_en      = 0;
         output_en      = 0;
 
         case (state)
@@ -93,7 +93,7 @@ module conv33_ctrl (
                 inputbuf_read_en = 1;
             end
             COMPUTE: begin
-                conv33_en = 1;             // 触发计算
+                conv11_en = 1;             // 触发计算
             end
             OUTPUT: begin
                 output_en = 1;             // 启动结果输出

@@ -1,24 +1,72 @@
-module image_memory_rgb_sep (
+module image_reprocess (
     input wire clk,
-    input wire we, // 写使能
-    input wire [8:0] row,   // 行地址 0~319
-    input wire [8:0] col,   // 列地址 0~319
-    input wire [23:0] din,  // 24位输入，RGB888
-    output reg [23:0] dout  // 24位输出，RGB888
+    input wire rst,
+    input wire start,
+    input wire signed [23:0] input_scale,     // Q8.16=Q16.8
+    output reg signed [7:0]  data_out,        // Q8.16
+    output reg signed [1:0]  channel_out,     // 0=R, 1=G, 2=B
+    output reg signed [13:0] index_out,
+    output reg valid,
+    output reg done
 );
+    // ROM 数据
+    (* rom_style = "block" *) reg [7:0] R [0:16383];
+    (* rom_style = "block" *) reg [7:0] G [0:16383];
+    (* rom_style = "block" *) reg [7:0] B [0:16383];
 
-    // 三个通道分别存储
-    reg [7:0] mem_r [0:319][0:319];
-    reg [7:0] mem_g [0:319][0:319];
-    reg [7:0] mem_b [0:319][0:319];
+    // 初始化文件（仿真用）
+    initial $readmemh("R.mem", R);
+    initial $readmemh("G.mem", G);
+    initial $readmemh("B.mem", B);
 
-    always @(posedge clk) begin
-        if (we) begin
-            mem_r[row][col] <= din[23:16];
-            mem_g[row][col] <= din[15:8];
-            mem_b[row][col] <= din[7:0];
+    // 控制信号
+    reg        [13:0] addr;
+    reg        [1:0]  channel;
+    // 中间变量
+    reg        [7:0]  pixel;
+    reg signed [31:0] norm;
+    reg signed [23:0] result;
+    reg signed [15:0] pixel_q8_8;
+    // FSM 控制
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            addr <= 0;
+            channel <= 0;
+            valid <= 0;
+            done <= 0;
+        end else if (start && !done) begin
+            // Step 1: 读像素
+            case (channel)
+                2'd0: pixel <= R[addr];
+                2'd1: pixel <= G[addr];
+                2'd2: pixel <= B[addr];
+                default: pixel <= 0;
+            endcase
+
+            // Step 2: normalize
+            pixel_q8_8 <= pixel <<< 8;   // Q8.8
+            norm  <= pixel_q8_8 * input_scale;      // Q16.16
+            result <= norm[31:16] - 16'sd128;      // Q8.16
+
+            // Step 3: 输出
+            data_out <= (result > 127) ? 8'sd127 : (result < -128) ? -8'sd128 : result[7:0];
+            channel_out <= channel;
+            index_out <= addr;
+            valid <= 1;
+            
+            // Step 4: 地址递增
+            if (addr == 14'd16383) begin
+                addr <= 0;
+                if (channel == 2)
+                    done <= 1;
+                else
+                    channel <= channel + 1;
+            end else begin
+                addr <= addr + 1;
+            end
+        end else begin
+            valid <= 0;
         end
-        dout <= {mem_r[row][col], mem_g[row][col], mem_b[row][col]};
     end
 
 endmodule
