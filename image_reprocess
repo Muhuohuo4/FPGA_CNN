@@ -25,7 +25,6 @@ module image_reprocess (
     reg        [13:0] addr;
     reg        [1:0]  channel;
 
-    // 中间变量
     reg        [7:0]  pixel;
     
     wire [6:0] row = addr / 128;
@@ -35,18 +34,16 @@ module image_reprocess (
     wire signed [15:0] pixel_q8_8 = pixel << 8;              // Q8.8
     wire signed [31:0] norm  = pixel_q8_8 * input_scale;      // Q16.16
     wire signed [15:0] result = norm[31:16] - 16'sd128;       // Q8.16
-    wire signed [7:0]  data_out <= (result > 127) ? 8'sd127 :
+    wire signed [7:0]  data_out = (result > 127) ? 8'sd127 :
                        (result < -128) ? -8'sd128 :
                        $signed({result[15], result[6:0]});
 
-    // FSM 控制
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             addr <= 0;
             channel <= 0;
             done <= 0;
         end else if (start && !done) begin
-            // Step 1: 读像素
             case (channel)
                 2'd0: pixel <= channel_1[addr];
                 2'd1: pixel <= channel_2[addr];
@@ -59,7 +56,7 @@ module image_reprocess (
                 2'd1: channel_5[addr_pad] <= data_out;
                 2'd2: channel_6[addr_pad] <= data_out;
             endcase
-            // Step 4: 地址递增
+
             if (addr == 14'd16383) begin
                 addr <= 0;
                 if (channel == 2)
