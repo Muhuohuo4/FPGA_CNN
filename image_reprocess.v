@@ -54,19 +54,32 @@ module image_reprocess (
         if (rst) begin
             addr <= 0;
             channel <= 0;
-            done <= 0;
-            valid <= 0;
         end else if (start && !done) begin
-            valid <= 1;
             if (addr == 14'd16383) begin
                 addr <= 0;
                 if (channel == 2)
-                    done <= 1;
+                    channel <= channel;  // hold
                 else
                     channel <= channel + 1;
             end else begin
                 addr <= addr + 1;
             end
+        end
+    end
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            done <= 0;
+        end else if (start && !done && (addr == 14'd16383) && (channel == 2)) begin
+            done <= 1;
+        end
+    end
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            valid <= 0;
+        end else if (start && !done) begin
+            valid <= 1;
         end else begin
             valid <= 0;
         end

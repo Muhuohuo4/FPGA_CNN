@@ -2,7 +2,7 @@ module conv11_calc #(
     parameter DATA_WIDTH = 8,
     parameter MUL_WIDTH  = 16,
     parameter BIAS_WIDTH = 32,
-    parameter OUT_WIDTH  = 32
+    parameter OUT_WIDTH  = 8
 )(
     input  wire                   clk,
     input  wire                   rst,
@@ -20,16 +20,16 @@ module conv11_calc #(
     output reg                           valid
 );
     wire signed [MUL_WIDTH-1:0] mul = data_0_0 * weight_0;
-    wire signed [OUT_WIDTH-1:0] result_bias = mul + bias;
-    wire signed [OUT_WIDTH-1:0] result_scale = result_bias * scale;
-    wire signed [DATA_WIDTH-1:0] result_8 = result_scale[23:16];
+    wire signed [BIAS_WIDTH-1:0] result_bias = mul + bias;
+    wire signed [BIAS_WIDTH-1:0] result_scale = result_bias * scale;
+    wire signed [OUT_WIDTH-1:0] result_8 = result_scale[23:16];
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             result <= 0;
             valid  <= 0;
         end else if (conv11_en) begin
-            result <= result_8[DATA_WIDTH-1] ? 0 : result_8;
+            result <= result_8[OUT_WIDTH-1] ? 0 : result_8;
             valid  <= 1;
         end else begin
             valid <= 0;
