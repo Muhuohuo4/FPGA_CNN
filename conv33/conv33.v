@@ -1,8 +1,8 @@
 module conv33 #(
-    parameter DATA_WIDTH = 8,
-    parameter BIAS_WIDTH = 32,
-    parameter MUL_WIDTH  = 16,
-    parameter OUT_WIDTH  = 8
+    parameter                     DATA_WIDTH = 8,
+    parameter                     BIAS_WIDTH = 32,
+    parameter                     MUL_WIDTH  = 16,
+    parameter                     OUT_WIDTH  = 8
 )(
     input  wire                   clk,
     input  wire                   rst,
@@ -86,22 +86,22 @@ module conv33 #(
     conv33_weight_input #(
         .DATA_WIDTH(DATA_WIDTH)
     ) u_weight_input(
-        .clk        (clk),
-        .rst        (rst),
-        .load_en    (load_weight_en),
-        .load_data  (weight_data),
-        .read_en    (read_weight_en),
-        .weight_0   (w0),
-        .weight_1   (w1),
-        .weight_2   (w2),
-        .weight_3   (w3),
-        .weight_4   (w4),
-        .weight_5   (w5),
-        .weight_6   (w6),
-        .weight_7   (w7),
-        .weight_8   (w8),
-        .weight_load(weight_load_done),
-        .valid      (weight_valid)
+        .clk                (clk),
+        .rst                (rst),
+        .load_en            (load_weight_en),
+        .load_data          (weight_data),
+        .read_en            (read_weight_en),
+        .weight_0           (w0),
+        .weight_1           (w1),
+        .weight_2           (w2),
+        .weight_3           (w3),
+        .weight_4           (w4),
+        .weight_5           (w5),
+        .weight_6           (w6),
+        .weight_7           (w7),
+        .weight_8           (w8),
+        .weight_load        (weight_load_done),
+        .valid              (weight_valid)
     );
 
     // 偏置模块
