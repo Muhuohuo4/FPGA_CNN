@@ -1,0 +1,108 @@
+module layer_0  (
+    input  wire        clk,
+    input  wire        rst,
+    input  wire        start,
+    output wire        done,
+    output wire [7:0]  dout,
+    output wire        dout_valid
+);
+
+    // === 控制信号 ===
+    wire sw_start, conv_start, relu_start, write_en;
+    wire sw_valid, conv_valid, relu_valid;
+
+    wire [1:0]  input_ch_idx;
+    wire [3:0]  output_ch_idx;
+
+    wire signed [7:0]  sw_data_00, sw_data_01, sw_data_02;
+    wire signed [7:0]  sw_data_10, sw_data_11, sw_data_12;
+    wire signed [7:0]  sw_data_20, sw_data_21, sw_data_22;
+
+    wire signed [15:0] conv_result;
+    reg  signed [15:0] acc_result;
+
+    wire signed [15:0] bias;
+    wire signed [15:0] scale;
+
+    wire [7:0] relu_out;
+
+    // === 控制模块 ===
+    layer_0_ctrl ctrl (
+        .clk(clk), .rst(rst), .start(start),
+        .sw_valid(sw_valid), .conv_valid(conv_valid), .relu_valid(relu_valid),
+        .sw_start(sw_start), .conv_start(conv_start), .relu_start(relu_start),
+        .write_en(write_en),
+        .input_ch_idx(input_ch_idx),
+        .output_ch_idx(output_ch_idx),
+        .done(done)
+    );
+
+    // === 输入通道 ROM （根据 input_ch_idx 选择 channel_4 ~ 6） ===
+    wire signed [7:0] pix_in;
+    wire [1:0] ch_sel = input_ch_idx;
+
+    wire signed [7:0] channel_out;
+    assign pix_in = channel_out;
+
+    channel_mux u_chmux (
+        .clk(clk), .rst(rst),
+        .ch_sel(ch_sel),   // 0→channel_4, 1→channel_5, 2→channel_6
+        .data_out(channel_out)
+    );
+
+    // === 滑窗 ===
+    sliding_window_3x3 u_sw (
+        .clk(clk), .rst(rst),
+        .start(sw_start),
+        .pix_in(pix_in),
+        .data_00(sw_data_00), .data_01(sw_data_01), .data_02(sw_data_02),
+        .data_10(sw_data_10), .data_11(sw_data_11), .data_12(sw_data_12),
+        .data_20(sw_data_20), .data_21(sw_data_21), .data_22(sw_data_22),
+        .valid_out(sw_valid)
+    );
+
+    // === 卷积 ===
+    conv33 u_conv (
+        .clk(clk), .rst(rst),
+        .start(conv_start),
+        .data_0_0(sw_data_00), .data_0_1(sw_data_01), .data_0_2(sw_data_02),
+        .data_1_0(sw_data_10), .data_1_1(sw_data_11), .data_1_2(sw_data_12),
+        .data_2_0(sw_data_20), .data_2_1(sw_data_21), .data_2_2(sw_data_22),
+        .result(conv_result),
+        .valid(conv_valid)
+    );
+
+    // === 累加器 ===
+    always @(posedge clk) begin
+        if (rst)
+            acc_result <= 0;
+        else if (conv_valid)
+            acc_result <= acc_result + conv_result;
+        else if (relu_start)
+            acc_result <= 0;  // 清零准备下一输出通道
+    end
+
+    // === 参数 ROM（bias, scale）===
+    param_rom u_param (
+        .clk(clk),
+        .layer_id(4'd0),
+        .ch_idx(output_ch_idx),
+        .bias_out(bias),
+        .scale_out(scale)
+    );
+
+    // === 激活 ===
+    conv_bias_scale_relu u_relu (
+        .clk(clk), .rst(rst),
+        .valid_in(relu_start),
+        .data_in(acc_result),
+        .bias(bias),
+        .scale(scale),
+        .data_out(dout),
+        .valid_out(relu_valid)
+    );
+
+    
+    assign dout_valid = write_en;
+
+endmodule

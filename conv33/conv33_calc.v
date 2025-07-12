@@ -31,7 +31,7 @@ module conv33_calc #(
     input  wire signed [DATA_WIDTH-1:0]  weight_8,
 
     // 偏置 
-    input  wire signed [BIAS_WIDTH-1:0] bias,
+    //input  wire signed [BIAS_WIDTH-1:0] bias,
 
     // 缩放系数
     input  wire signed [BIAS_WIDTH-1:0] scale,
@@ -39,39 +39,7 @@ module conv33_calc #(
     // 输出结果
     output reg  signed [DATA_WIDTH-1:0] result,
     output reg                          valid,
-    
-    output wire signed [MUL_WIDTH-1:0] mul_0,
-    output wire signed [MUL_WIDTH-1:0] mul_1,
-    output wire signed [MUL_WIDTH-1:0] mul_2,
-    output wire signed [MUL_WIDTH-1:0] mul_3,
-    output wire signed [MUL_WIDTH-1:0] mul_4,
-    output wire signed [MUL_WIDTH-1:0] mul_5,
-    output wire signed [MUL_WIDTH-1:0] mul_6,
-    output wire signed [MUL_WIDTH-1:0] mul_7,
-    output wire signed [MUL_WIDTH-1:0] mul_8,
-    output wire signed [MUL_WIDTH:0]   sum0,
-    output wire signed [MUL_WIDTH:0]   sum1, 
-    output wire signed [MUL_WIDTH:0]   sum2,
-    output wire signed [MUL_WIDTH:0]   sum3,
-    output wire signed [MUL_WIDTH+1:0] sum4,
-    output wire signed [MUL_WIDTH+1:0] sum5
 );
-
-    assign mul_0 = mul[0];
-    assign mul_1 = mul[1];
-    assign mul_2 = mul[2];
-    assign mul_3 = mul[3];
-    assign mul_4 = mul[4];
-    assign mul_5 = mul[5];
-    assign mul_6 = mul[6];
-    assign mul_7 = mul[7];
-    assign mul_8 = mul[8];
-    assign sum0= sum_0;
-    assign sum1= sum_1; 
-    assign sum2= sum_2;
-    assign sum3= sum_3;
-    assign sum4= sum_4;
-    assign sum5= sum_5;
 
     // 中间乘法结果
     wire signed [MUL_WIDTH-1:0] mul [0:8];
@@ -94,9 +62,9 @@ module conv33_calc #(
     wire signed [MUL_WIDTH+1:0] sum_4 = sum_0 + sum_1;  // 0~3
     wire signed [MUL_WIDTH+1:0] sum_5 = sum_2 + sum_3;  // 4~7
     wire signed [BIAS_WIDTH-1:0] conv_sum = sum_4 + sum_5 + mul[8];  // 0~8;
-    wire signed [BIAS_WIDTH-1:0] result_bias = conv_sum + bias;
-    wire signed [BIAS_WIDTH-1:0] result_scale = result_bias * scale;
-    wire signed [OUT_WIDTH-1:0] result_8 = result_scale[23:16];
+    //wire signed [BIAS_WIDTH-1:0] result_bias = conv_sum + bias;
+    //wire signed [BIAS_WIDTH-1:0] result_scale = result_bias * scale;
+    //wire signed [OUT_WIDTH-1:0] result_8 = result_scale[23:16];
 
     // 同步输出
     always @(posedge clk or posedge rst) begin
@@ -104,7 +72,8 @@ module conv33_calc #(
             result <= 0;
             valid  <= 0;
         end else if (conv33_en) begin
-            result  <= result_8[OUT_WIDTH-1] ? 0 : result_8;
+            //result  <= result_8[OUT_WIDTH-1] ? 0 : result_8;
+            result  <= conv_sum;
             valid  <= 1;
         end else begin
             valid <= 0;

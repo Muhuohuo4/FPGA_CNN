@@ -1,5 +1,5 @@
 module conv33_output_buffer #(
-    parameter OUT_WIDTH = 8
+    parameter OUT_WIDTH = 32
 )(
     input wire clk,
     input wire rst,
