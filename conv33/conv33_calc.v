@@ -30,8 +30,8 @@ module conv33_calc #(
     input  wire signed [DATA_WIDTH-1:0]  weight_8,
 
     // 输出结果
-    output reg  signed [DATA_WIDTH-1:0] result,
-    output reg                          valid,
+    output reg  signed [OUT_WIDTH-1:0]   result,
+    output reg                           valid
 );
 
     // 中间乘法结果

@@ -1,18 +1,14 @@
 module layer_0 #(
     parameter IN_CH     = 3,
+    parameter IN_HW     = 128,
     parameter OUT_CH    = 16,
-    parameter KERNEL_H  = 3,
-    parameter KERNEL_W  = 3,
-    parameter OUT_H     = 64,
-    parameter OUT_W     = 64,
+    parameter OUT_HW    = 64,
     parameter STRIDE    = 1
 )(
     input  wire        clk,
     input  wire        rst,
     input  wire        start,
     output wire        done,
-    output wire [7:0]  dout,
-    output wire        dout_valid
 );
 
     // === 控制信号 ===
@@ -45,41 +41,34 @@ module layer_0 #(
         .done(done)
     );
 
-    // === 输入通道 ROM （根据 input_ch_idx 选择 channel_4 ~ 6） ===
-    wire signed [7:0] pix_in;
-    wire [1:0] ch_sel = input_ch_idx;
-
-    wire signed [7:0] channel_out;
-    assign pix_in = channel_out;
-
-    channel_mux u_chmux (
-        .clk(clk), .rst(rst),
-        .ch_sel(ch_sel),   // 0→channel_4, 1→channel_5, 2→channel_6
-        .data_out(channel_out)
-    );
-
     // === 滑窗 ===
-    sliding_window_3x3 u_sw (
-        .clk(clk), .rst(rst),
-        .start(sw_start),
-        .pix_in(pix_in),
-        .data_00(sw_data_00), .data_01(sw_data_01), .data_02(sw_data_02),
-        .data_10(sw_data_10), .data_11(sw_data_11), .data_12(sw_data_12),
-        .data_20(sw_data_20), .data_21(sw_data_21), .data_22(sw_data_22),
-        .valid_out(sw_valid)
+    sliding_window_3x3 #(
+    .IMG_WIDTH(IN_HW),      // 图像宽度
+    .STRIDE(STRIDE)         // 1/2
+    ) u_sw (
+    .clk       (clk),
+    .rst       (rst),
+    .en        (sw_start), 
+    .valid     (sw_out_valid),          // 输出有效
+    .data_in   (sw_in),                 // 输入像素
+    .data_out_0(sw_data_00), .data_out_1(sw_data_01), .data_out_2(sw_data_02),
+    .data_out_3(sw_data_10), .data_out_4(sw_data_11), .data_out_5(sw_data_12),
+    .data_out_6(sw_data_20), .data_out_7(sw_data_21), .data_out_8(sw_data_22)
     );
-
+    
     // === 卷积 ===
-    conv33 u_conv (
-        .clk(clk), .rst(rst),
-        .start(conv_start),
-        .data_0_0(sw_data_00), .data_0_1(sw_data_01), .data_0_2(sw_data_02),
-        .data_1_0(sw_data_10), .data_1_1(sw_data_11), .data_1_2(sw_data_12),
-        .data_2_0(sw_data_20), .data_2_1(sw_data_21), .data_2_2(sw_data_22),
-        .result(conv_result),
-        .valid(conv_valid)
+    conv33 u_conv33 (
+    .clk(clk),
+    .rst(rst),
+    .weight_data(weight_data),        // 权重加载接口
+    .input_valid(sw_valid),           // 输入数据有效信号
+    .data_in_0_0(sw_data_00), .data_in_0_1(sw_data_01), .data_in_0_2(sw_data_02),
+    .data_in_1_0(sw_data_10), .data_in_1_1(sw_data_11), .data_in_1_2(sw_data_12),
+    .data_in_2_0(sw_data_20), .data_in_2_1(sw_data_21), .data_in_2_2(sw_data_22),
+    .out_valid(conv_valid),
+    .out_data(conv_result)
     );
-
+    
     // === 累加器 ===
     always @(posedge clk) begin
         if (rst)
@@ -89,28 +78,50 @@ module layer_0 #(
         else if (relu_start)
             acc_result <= 0;  // 清零准备下一输出通道
     end
-
+    
     // === 参数 ROM（bias, scale）===
-    param_rom u_param (
+    param_mem u_param (
         .clk(clk),
         .layer_id(4'd0),
         .ch_idx(output_ch_idx),
         .bias_out(bias),
         .scale_out(scale)
     );
-
-    // === 激活 ===
-    conv_bias_scale_relu u_relu (
-        .clk(clk), .rst(rst),
-        .valid_in(relu_start),
-        .data_in(acc_result),
-        .bias(bias),
-        .scale(scale),
-        .data_out(dout),
-        .valid_out(relu_valid)
+   
+    // 激活模块
+    bias_scale_relu u_relu (
+        .clk            (clk),
+        .rst            (rst),
+        .valid_in       (valid_conv),
+        .ready_in       (relu_ready),
+        .data_in        (acc_result),
+        .bias           (bias),
+        .scale_q8_8     (scale),
+        .valid_out      (relu_valid),
+        .ready_out      (ready_relu),
+        .data_out       (relu_out_data)
     );
-
-    
-    assign dout_valid = write_en;
+    feature_map_buffer #(
+        .WRITE_H(OUT_HW),
+        .WRITE_W(OUT_HW),
+        .WRITE_C(OUT_CH),
+        .READ_H(IN_HW),
+        .READ_W(IN_HW),
+        .READ_C(IN_CH),
+        .mode_sel(1)  // a写b读
+    ) u_feature_map_buf (
+        .clk            (clk),
+        .rst            (rst),
+        .write_en       (fm_write_en),    // 写端口：连接 a
+        .write_ch       (fm_write_ch),
+        .write_h        (fm_write_h),
+        .write_w        (fm_write_w),
+        .read_en        (fm_read_en),     // 读端口：连接 b
+        .read_ch        (fm_read_ch),
+        .read_h         (fm_read_h),
+        .read_w         (fm_read_w),
+        .data_in        (relu_out_data),
+        .data_out       (sw_in)
+    );
 
 endmodule

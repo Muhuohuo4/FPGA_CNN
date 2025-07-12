@@ -1,6 +1,88 @@
 module layer_1 #(
-    parameter INPUT_CH = 16,
-    parameter OUTPUT_CH = 16,
-    parameter IS_DW = 1,
+    parameter DW_IN_CH     = 16,
+    parameter DW_OUT_CH    = 16,
+    parameter DW_OUT_H     = 64,
+    parameter DW_OUT_W     = 64,
+    parameter PW_IN_CH     = 16,
+    parameter PW_OUT_CH    = 32,
+    parameter PW_OUT_H     = 64,
+    parameter PW_OUT_W     = 64,
+    parameter DW_STRIDE    = 1
+)(
+    input  wire        clk,
+    input  wire        rst,
+    input  wire        start,
+    output wire        done,
+    output wire [7:0]  dout,
+    output wire        dout_valid
+);
 
-)
+    // === 控制信号 ===
+    wire dw_start, pw_start;
+    wire dw_valid, pw_valid;
+    wire [5:0] h_idx, w_idx;  // 假设支持最大64×64
+
+    // === DW阶段 ===
+    wire [7:0] dw_out;
+    wire       dw_out_valid;
+
+    sliding_window_3x3 #(
+    .IMG_WIDTH(64),      // 根据实际图像宽度修改
+    .STRIDE(STRIDE)           // 或 2，看 layer 设置
+    ) u_sw (
+    .clk       (clk),
+    .rst       (rst),
+    .en        (sw_start), 
+    .valid     (sw_valid),          // 输出有效
+    .data_in   (sw_in),             // 输入像素
+    .data_out_0(sw_data_00), .data_out_1(sw_data_01), .data_out_2(sw_data_02),
+    .data_out_3(sw_data_10), .data_out_4(sw_data_11), .data_out_5(sw_data_12),
+    .data_out_6(sw_data_20), .data_out_7(sw_data_21), .data_out_8(sw_data_22)
+    );
+    // === 卷积 ===
+    conv33 u_conv33 (
+    .clk(clk),
+    .rst(rst),
+    .weight_data(weight_data),        // 权重加载接口
+    .input_valid(sw_valid),           // 输入数据有效信号
+    .data_in_0_0(sw_data_00), .data_in_0_1(sw_data_01), .data_in_0_2(sw_data_02),
+    .data_in_1_0(sw_data_10), .data_in_1_1(sw_data_11), .data_in_1_2(sw_data_12),
+    .data_in_2_0(sw_data_20), .data_in_2_1(sw_data_21), .data_in_2_2(sw_data_22),
+    .out_valid(conv_valid),
+    .out_data(conv_result)
+    );
+
+    // === 中间 buffer （可改为双buffer）===
+    wire [7:0] dw_pw_data;
+    wire       dw_pw_valid;
+
+    assign dw_pw_data  = dw_out;
+    assign dw_pw_valid = dw_out_valid;
+
+    // === PW阶段 ===
+    wire [7:0] pw_out;
+
+    conv11 u_pw_conv (
+        .clk(clk),
+        .rst(rst),
+        .start(pw_start),
+        .pix_in(dw_pw_data),
+        .pix_valid(dw_pw_valid),
+        .result(pw_out),
+        .valid(pw_valid)
+    );
+
+    assign dout       = pw_out;
+    assign dout_valid = pw_valid;
+
+    // === 控制模块 ===
+    layer_1_ctrl ctrl (
+        .clk(clk), .rst(rst), .start(start),
+        .dw_valid(dw_out_valid),
+        .pw_valid(pw_valid),
+        .dw_start(dw_start),
+        .pw_start(pw_start),
+        .done(done)
+    );
+
+endmodule
