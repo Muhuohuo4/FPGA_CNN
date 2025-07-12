@@ -4,10 +4,16 @@ module sliding_window_3x3 #(
 )(
     input  wire        clk,
     input  wire        rst,
-    input  wire        en,             // 输入使能，每拍1像素
-    input  wire [7:0]  data_in,        // 输入像素
 
-    output reg         valid,          // 输出有效
+    // 上游接口
+    input  wire        valid_in,
+    output wire        ready_out,
+    input  wire [7:0]  data_in,
+
+    // 下游接口
+    output reg         valid_out,
+    input  wire        ready_in,
+
     output reg [7:0]   data_out_0,
     output reg [7:0]   data_out_1,
     output reg [7:0]   data_out_2,
@@ -22,14 +28,18 @@ module sliding_window_3x3 #(
     localparam PAD_WIDTH = IMG_WIDTH + 2;
 
     reg [7:0] row, col;
+    assign ready_out = ready_in; 
 
-    // Stride 判断
+    wire en = valid_in && ready_out;
+    wire accept_output = valid_out && ready_in;
+
+    // 判断是否需要输出
     wire stride_match = ((row - 1) % STRIDE == 0) && ((col - 1) % STRIDE == 0);
-    wire data_valid = (row >= 1 && row <= IMG_WIDTH) && (col >= 1 && col <= IMG_WIDTH);
+    wire data_valid   = (row >= 1 && row <= IMG_WIDTH) && (col >= 1 && col <= IMG_WIDTH);
     wire [7:0] pixel_eff = data_valid ? data_in : 8'd0;
 
-    reg [7:0] line_buf_0 [0:PAD_WIDTH-1];  // row-2
-    reg [7:0] line_buf_1 [0:PAD_WIDTH-1];  // row-1
+    reg [7:0] line_buf_0 [0:PAD_WIDTH-1];
+    reg [7:0] line_buf_1 [0:PAD_WIDTH-1];
 
     reg [7:0] shift_col_0 [0:2];
     reg [7:0] shift_col_1 [0:2];
@@ -63,11 +73,11 @@ module sliding_window_3x3 #(
         if (en) begin
             shift_col_0[0] <= shift_col_0[1];
             shift_col_0[1] <= shift_col_0[2];
-            shift_col_0[2] <= line_buf_0[col];
+            shift_col_0[2] <= line_buf_0 [col];
 
             shift_col_1[0] <= shift_col_1[1];
             shift_col_1[1] <= shift_col_1[2];
-            shift_col_1[2] <= line_buf_1[col];
+            shift_col_1[2] <= line_buf_1 [col];
 
             shift_col_2[0] <= shift_col_2[1];
             shift_col_2[1] <= shift_col_2[2];
@@ -84,14 +94,17 @@ module sliding_window_3x3 #(
         end
     end
 
-    // 输出 valid
+    // 输出 valid 控制
     always @(posedge clk or posedge rst) begin
         if (rst)
-            valid <= 0;
-        else
-            valid <= (row >= 2 && row <= PAD_WIDTH-1) &&
-                     (col >= 2 && col <= PAD_WIDTH-1) &&
-                     en && stride_match;
+            valid_out <= 0;
+        else if (en) begin
+            valid_out <= (row >= 2 && row <= PAD_WIDTH-1) &&
+                         (col >= 2 && col <= PAD_WIDTH-1) &&
+                         stride_match;
+        end else if (accept_output) begin
+            valid_out <= 0;
+        end
     end
 
 endmodule

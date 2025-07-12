@@ -5,12 +5,19 @@ module conv33 #(
 )(
     input  wire                   clk,
     input  wire                   rst,
+    
+    input  wire                   data_valid_in,
+    input  wire                   data_ready_out,
+    output wire                   weight_ready_out,
+    output wire                   weight_valid_in,    
+    output reg                    out_valid_out,
+    input  wire                   out_ready_in,
 
     // 权重偏置输入
     input  wire [DATA_WIDTH-1:0]  weight_data,
 
     // 输入数据
-    input  wire                   input_valid,
+
     input  wire [DATA_WIDTH-1:0]  data_in_0_0,
     input  wire [DATA_WIDTH-1:0]  data_in_0_1,
     input  wire [DATA_WIDTH-1:0]  data_in_0_2,
@@ -21,8 +28,6 @@ module conv33 #(
     input  wire [DATA_WIDTH-1:0]  data_in_2_1,
     input  wire [DATA_WIDTH-1:0]  data_in_2_2,
 
-    // 卷积结果
-    output wire                   out_valid,
     output wire [OUT_WIDTH-1:0]   out_data
 );
 
@@ -42,7 +47,6 @@ module conv33 #(
     // 权重缓存
     wire [DATA_WIDTH-1:0] w0, w1, w2, w3, w4, w5, w6, w7, w8;
     wire                  weight_valid;
-    // 偏置缓存删除，缩放系数删除
 
     // 输入数据缓存
     wire [DATA_WIDTH-1:0] d00, d01, d02, d10, d11, d12, d20, d21, d22;
@@ -81,7 +85,7 @@ module conv33 #(
         .weight_7           (w7),
         .weight_8           (w8),
         .weight_load        (weight_load_done),
-        .valid              (weight_valid)
+        .valid              (weight_valid_in)
     );
 
 
@@ -89,30 +93,30 @@ module conv33 #(
     conv33_input #(
         .DATA_WIDTH(DATA_WIDTH)
     ) u_input(
-        .clk     (clk),
-        .rst     (rst),
-        .input_valid(input_valid),
-        .in_0_0  (data_in_0_0),
-        .in_0_1  (data_in_0_1),
-        .in_0_2  (data_in_0_2),
-        .in_1_0  (data_in_1_0),
-        .in_1_1  (data_in_1_1),
-        .in_1_2  (data_in_1_2),
-        .in_2_0  (data_in_2_0),
-        .in_2_1  (data_in_2_1),
-        .in_2_2  (data_in_2_2),
-        .out_0_0 (d00),
-        .out_0_1 (d01),
-        .out_0_2 (d02),
-        .out_1_0 (d10),
-        .out_1_1 (d11),
-        .out_1_2 (d12),
-        .out_2_0 (d20),
-        .out_2_1 (d21),
-        .out_2_2 (d22),
-        .DATA_WIDTH(DATA_WIDTH),
-        .MUL_WIDTH (MUL_WIDTH),
-        .OUT_WIDTH (OUT_WIDTH)
+        .clk            (clk),
+        .rst            (rst),
+        .input_valid    (data_valid_in),
+        .in_0_0         (data_in_0_0),
+        .in_0_1         (data_in_0_1),
+        .in_0_2         (data_in_0_2),
+        .in_1_0         (data_in_1_0),
+        .in_1_1         (data_in_1_1),
+        .in_1_2         (data_in_1_2),
+        .in_2_0         (data_in_2_0),
+        .in_2_1         (data_in_2_1),
+        .in_2_2         (data_in_2_2),
+        .out_0_0        (d00),
+        .out_0_1        (d01),
+        .out_0_2        (d02),
+        .out_1_0        (d10),
+        .out_1_1        (d11),
+        .out_1_2        (d12),
+        .out_2_0        (d20),
+        .out_2_1        (d21),
+        .out_2_2        (d22),
+        .DATA_WIDTH     (DATA_WIDTH),
+        .MUL_WIDTH      (MUL_WIDTH),
+        .OUT_WIDTH      (OUT_WIDTH)
     ) u_calc(
         .clk     (clk),
         .rst     (rst),
@@ -147,10 +151,10 @@ module conv33 #(
         .rst     (rst),
         .in_valid(calc_valid),
         .in_data (result),
-        .out_valid(out_valid),
+        .out_valid(out_valid_out),
         .out_data (out_data)
     );
 
-    assign output_done = out_valid;
+    assign output_done = out_valid_out;
 
 endmodule
