@@ -67,32 +67,27 @@ module conv33 #(
     );
 
     // 权重模块
-    conv33_weight_input #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) u_weight_input(
+    conv33_weight_input u_weight_input(
         .clk                (clk),
         .rst                (rst),
         .load_en            (load_weight_en),
         .load_data          (weight_data),
         .read_en            (read_weight_en),
-        .weight_0           (w0),
-        .weight_1           (w1),
-        .weight_2           (w2),
-        .weight_3           (w3),
-        .weight_4           (w4),
-        .weight_5           (w5),
-        .weight_6           (w6),
-        .weight_7           (w7),
-        .weight_8           (w8),
+        .weight_0           (weight_0),
+        .weight_1           (weight_1),
+        .weight_2           (weight_2),
+        .weight_3           (weight_3),
+        .weight_4           (weight_4),
+        .weight_5           (weight_5),
+        .weight_6           (weight_6),
+        .weight_7           (weight_7),
+        .weight_8           (weight_8),
         .weight_load        (weight_load_done),
         .valid              (weight_valid_in)
     );
 
-
     // 输入模块
-    conv33_input #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) u_input(
+    conv33_input u_input(
         .clk            (clk),
         .rst            (rst),
         .input_valid    (data_valid_in),
@@ -105,42 +100,43 @@ module conv33 #(
         .in_2_0         (data_in_2_0),
         .in_2_1         (data_in_2_1),
         .in_2_2         (data_in_2_2),
-        .out_0_0        (d00),
-        .out_0_1        (d01),
-        .out_0_2        (d02),
-        .out_1_0        (d10),
-        .out_1_1        (d11),
-        .out_1_2        (d12),
-        .out_2_0        (d20),
-        .out_2_1        (d21),
-        .out_2_2        (d22),
+        .out_0_0        (data_0_0),
+        .out_0_1        (data_0_1),
+        .out_0_2        (data_0_2),
+        .out_1_0        (data_1_0),
+        .out_1_1        (data_1_1),
+        .out_1_2        (data_1_2),
+        .out_2_0        (data_2_0),
+        .out_2_1        (data_2_1),
+        .out_2_2        (data_2_2),
         .DATA_WIDTH     (DATA_WIDTH),
         .MUL_WIDTH      (MUL_WIDTH),
         .OUT_WIDTH      (OUT_WIDTH)
-    ) u_calc(
+    ) 
+    conv33_calc u_calc(
         .clk     (clk),
         .rst     (rst),
         .conv33_en(conv33_en),
-        .data_0_0(d00),
-        .data_0_1(d01),
-        .data_0_2(d02),
-        .data_1_0(d10),
-        .data_1_1(d11),
-        .data_1_2(d12),
-        .data_2_0(d20),
-        .data_2_1(d21),
-        .data_2_2(d22),
-        .weight_0(w0),
-        .weight_1(w1),
-        .weight_2(w2),
-        .weight_3(w3),
-        .weight_4(w4),
-        .weight_5(w5),
-        .weight_6(w6),
-        .weight_7(w7),
-        .weight_8(w8),
-        .result  (result),
-        .valid   (calc_valid)
+        .data_0_0           (data_0_0),
+        .data_0_1           (data_0_1),
+        .data_0_2           (data_0_2),
+        .data_1_0           (data_1_0),
+        .data_1_1           (data_1_1),
+        .data_1_2           (data_1_2),
+        .data_2_0           (data_2_0),
+        .data_2_1           (data_2_1),
+        .data_2_2           (data_2_2),
+        .weight_0           (weight_0),
+        .weight_1           (weight_1),
+        .weight_2           (weight_2),
+        .weight_3           (weight_3),
+        .weight_4           (weight_4),
+        .weight_5           (weight_5),
+        .weight_6           (weight_6),
+        .weight_7           (weight_7),
+        .weight_8           (weight_8),
+        .result             (result),
+        .valid              (calc_valid)
     );
 
     //输出模块
