@@ -1,4 +1,12 @@
-module layer_0  (
+module layer_0 #(
+    parameter IN_CH     = 3,
+    parameter OUT_CH    = 16,
+    parameter KERNEL_H  = 3,
+    parameter KERNEL_W  = 3,
+    parameter OUT_H     = 64,
+    parameter OUT_W     = 64,
+    parameter STRIDE    = 1
+)(
     input  wire        clk,
     input  wire        rst,
     input  wire        start,

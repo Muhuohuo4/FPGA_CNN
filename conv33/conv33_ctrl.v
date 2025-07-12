@@ -8,8 +8,6 @@ module conv33_ctrl (
 
     // 来自各子模块的状态信�?
     input  wire weight_load_done,
-    input  wire bias_load_done,
-    input  wire scale_load_done,
     input  wire input_ready,
     input  wire calc_valid,
     input  wire output_done,
@@ -17,12 +15,6 @@ module conv33_ctrl (
     // 控制信号输出
     output reg  load_weight_en,
     output reg  read_weight_en,
-
-    output reg  load_bias_en,
-    output reg  read_bias_en,
-    output reg  load_scale_en,
-    output reg  read_scale_en,
-
     output reg  inputbuf_read_en,
 
     output reg  conv33_en,
@@ -32,12 +24,10 @@ module conv33_ctrl (
     // 状�?�机定义
     parameter IDLE    = 3'd0;
     parameter LOAD_W  = 3'd1;
-    parameter LOAD_B  = 3'd2;
-    parameter LOAD_S  = 3'd3;
-    parameter LOAD_I  = 3'd4;
-    parameter COMPUTE = 3'd5;
-    parameter WAIT    = 3'd6;
-    parameter OUTPUT  = 3'd7;
+    parameter LOAD_I  = 3'd2;
+    parameter COMPUTE = 3'd3;
+    parameter WAIT    = 3'd4;
+    parameter OUTPUT  = 3'd5;
     reg [2:0] state, nxt;
 
     // 状�?�寄存器
@@ -53,9 +43,7 @@ module conv33_ctrl (
         nxt = state;
         case (state)
             IDLE:    nxt = LOAD_W;
-            LOAD_W:  nxt = weight_load_done ? LOAD_B  : LOAD_W;
-            LOAD_B:  nxt = bias_load_done   ? LOAD_S  : LOAD_B;
-            LOAD_S:  nxt = scale_load_done  ? LOAD_I  : LOAD_S;
+            LOAD_W:  nxt = weight_load_done ? LOAD_I : LOAD_W;
             LOAD_I:  nxt = input_ready      ? COMPUTE : LOAD_I;
             COMPUTE: nxt = WAIT;
             WAIT:    nxt = calc_valid       ? OUTPUT  : WAIT;
@@ -68,10 +56,6 @@ module conv33_ctrl (
     always @(*) begin
         load_weight_en = 0;
         read_weight_en = 0;
-        load_bias_en   = 0;
-        read_bias_en   = 0;
-        load_scale_en  = 0;
-        read_scale_en  = 0;
         inputbuf_read_en  = 0;
         conv33_en      = 0;
         output_en      = 0;
@@ -80,14 +64,6 @@ module conv33_ctrl (
             LOAD_W: begin
                 load_weight_en = 1;
                 read_weight_en = weight_load_done;
-            end
-            LOAD_B: begin
-                load_bias_en = 1;
-                read_bias_en = bias_load_done;
-            end
-            LOAD_S: begin
-                load_scale_en = 1;
-                read_scale_en = scale_load_done;
             end
             LOAD_I: begin
                 inputbuf_read_en = 1;

@@ -1,0 +1,6 @@
+module layer_1 #(
+    parameter INPUT_CH = 16,
+    parameter OUTPUT_CH = 16,
+    parameter IS_DW = 1,
+
+)
