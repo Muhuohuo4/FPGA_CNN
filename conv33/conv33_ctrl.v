@@ -1,36 +1,29 @@
-// conv33_ctrl.v
-// 控制 3x3 卷积模块整体流程：依次加载权重�?�偏置和输入数据�?
-// 然后启动计算并在结果输出后重新回到空闲状态�??
-
 module conv33_ctrl (
     input  wire clk,
     input  wire rst,
+    input  wire start,
+    output reg  done,
 
-    // 来自各子模块的状态信�?
-    input  wire weight_load_done,
-    input  wire input_ready,
-    input  wire calc_valid,
-    input  wire output_done,
-
-    // 控制信号输出
-    output reg  load_weight_en,
-    output reg  read_weight_en,
-    output reg  inputbuf_read_en,
-
-    output reg  conv33_en,
-    output reg  output_en
+    output reg  input_start,
+    input  wire input_done,
+    output reg  weight_start,
+    input  wire weight_done,
+    output reg  calc_start,
+    input  wire calc_done,
+    output reg  output_start,
+    input  wire output_done
 );
 
-    // 状�?�机定义
-    parameter IDLE    = 3'd0;
-    parameter LOAD_W  = 3'd1;
-    parameter LOAD_I  = 3'd2;
-    parameter COMPUTE = 3'd3;
-    parameter WAIT    = 3'd4;
-    parameter OUTPUT  = 3'd5;
+    // 状态机定义
+    localparam IDLE    = 3'd0;
+    localparam LOAD_W  = 3'd1;
+    localparam LOAD_I  = 3'd2;
+    localparam COMPUTE = 3'd3;
+    localparam OUTPUT  = 3'd4;
+
     reg [2:0] state, nxt;
 
-    // 状�?�寄存器
+    // 状态跳转
     always @(posedge clk or posedge rst) begin
         if (rst)
             state <= IDLE;
@@ -38,41 +31,34 @@ module conv33_ctrl (
             state <= nxt;
     end
 
-    // 状�?�转移�?�辑
+    // 下一状态逻辑
     always @(*) begin
-        nxt = state;
         case (state)
-            IDLE:    nxt = LOAD_W;
-            LOAD_W:  nxt = weight_load_done ? LOAD_I : LOAD_W;
-            LOAD_I:  nxt = input_ready      ? COMPUTE : LOAD_I;
-            COMPUTE: nxt = WAIT;
-            WAIT:    nxt = calc_valid       ? OUTPUT  : WAIT;
-            OUTPUT:  nxt = output_done      ? IDLE    : OUTPUT;
+            IDLE:    nxt = start        ? LOAD_W  : IDLE;
+            LOAD_W:  nxt = weight_done  ? LOAD_I  : LOAD_W;
+            LOAD_I:  nxt = input_done   ? COMPUTE : LOAD_I;
+            COMPUTE: nxt = calc_done    ? OUTPUT  : COMPUTE;
+            OUTPUT:  nxt = output_done  ? IDLE    : OUTPUT;
             default: nxt = IDLE;
         endcase
     end
 
-    // 默认输出为低电平
+    // 输出控制信号
     always @(*) begin
-        load_weight_en = 0;
-        read_weight_en = 0;
-        inputbuf_read_en  = 0;
-        conv33_en      = 0;
-        output_en      = 0;
+        // 默认拉低
+        input_start  = 0;
+        weight_start = 0;
+        calc_start   = 0;
+        output_start = 0;
+        done         = 0;
 
         case (state)
-            LOAD_W: begin
-                load_weight_en = 1;
-                read_weight_en = weight_load_done;
-            end
-            LOAD_I: begin
-                inputbuf_read_en = 1;
-            end
-            COMPUTE: begin
-                conv33_en = 1;             // 触发计算
-            end
+            LOAD_W:     weight_start = 1;
+            LOAD_I:     input_start  = 1;
+            COMPUTE:    calc_start   = 1;
             OUTPUT: begin
-                output_en = 1;             // 启动结果输出
+                        output_start = 1;
+                        done         = output_done;
             end
         endcase
     end

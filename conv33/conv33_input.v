@@ -8,8 +8,6 @@ module conv33_input #(
     // 来自滑窗的数据输入
     input  wire                 valid_in,
     output wire                 ready_out,
-    output wire                 valid_out,
-    input  wire                 ready_in,
 
     input  wire [DATA_WIDTH-1:0] in_0_0,
     input  wire [DATA_WIDTH-1:0] in_0_1,
@@ -32,10 +30,6 @@ module conv33_input #(
     output wire [DATA_WIDTH-1:0] out_2_1,
     output wire [DATA_WIDTH-1:0] out_2_2
 );
-
-    // 中间信号
-    wire inputbuf_load;
-
 
     // 数据缓存模块实例化
     conv33_input_buffer u_input_buffer (
@@ -71,9 +65,7 @@ module conv33_input #(
         .start          (start),
         .done           (done),           // 输出完成信号
         .valid_in       (valid_in),
-        .ready_out      (ready_out),
-        .valid_out      (valid_out),
-        .ready_in       (ready_in),
+        .ready_out      (ready_out)
     );
 
 endmodule
