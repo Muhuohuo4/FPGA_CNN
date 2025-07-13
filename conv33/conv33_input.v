@@ -1,12 +1,16 @@
 module conv33_input #(
     parameter DATA_WIDTH = 8
 )(
-    input  wire clk,
-    input  wire rst,
-
+    input  wire                 clk,
+    input  wire                 rst,
+    input  wire                 start,
+    output wire                 done,           // 输出完成信号
     // 来自滑窗的数据输入
-    input  wire input_valid,
-    input  wire inputbuf_read_en,
+    input  wire                 valid_in,
+    output wire                 ready_out,
+    output wire                 valid_out,
+    input  wire                 ready_in,
+
     input  wire [DATA_WIDTH-1:0] in_0_0,
     input  wire [DATA_WIDTH-1:0] in_0_1,
     input  wire [DATA_WIDTH-1:0] in_0_2,
@@ -26,11 +30,7 @@ module conv33_input #(
     output wire [DATA_WIDTH-1:0] out_1_2,
     output wire [DATA_WIDTH-1:0] out_2_0,
     output wire [DATA_WIDTH-1:0] out_2_1,
-    output wire [DATA_WIDTH-1:0] out_2_2,
-
-    // 控制信号输出
-    output wire input_ready
-
+    output wire [DATA_WIDTH-1:0] out_2_2
 );
 
     // 中间信号
@@ -38,29 +38,42 @@ module conv33_input #(
 
 
     // 数据缓存模块实例化
-    conv33_input_buffer #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) u_input_buffer (
-        .clk(clk),
-        .rst(rst),
-        .input_valid(input_valid),
-        .inputbuf_read_en(inputbuf_read_en),
-        .inputbuf_load(inputbuf_load),
-        .in_0_0(in_0_0), .in_0_1(in_0_1), .in_0_2(in_0_2),
-        .in_1_0(in_1_0), .in_1_1(in_1_1), .in_1_2(in_1_2),
-        .in_2_0(in_2_0), .in_2_1(in_2_1), .in_2_2(in_2_2),
-        .out_0_0(out_0_0), .out_0_1(out_0_1), .out_0_2(out_0_2),
-        .out_1_0(out_1_0), .out_1_1(out_1_1), .out_1_2(out_1_2),
-        .out_2_0(out_2_0), .out_2_1(out_2_1), .out_2_2(out_2_2)
+    conv33_input_buffer u_input_buffer (
+        .clk            (clk),
+        .rst            (rst),
+        .start          (start),
+        .valid_in       (valid_in),
+        .ready_out      (ready_out),
+        .in_0_0         (in_0_0), 
+        .in_0_1         (in_0_1), 
+        .in_0_2         (in_0_2),
+        .in_1_0         (in_1_0), 
+        .in_1_1         (in_1_1), 
+        .in_1_2         (in_1_2),
+        .in_2_0         (in_2_0), 
+        .in_2_1         (in_2_1), 
+        .in_2_2         (in_2_2),
+        .out_0_0        (out_0_0), 
+        .out_0_1        (out_0_1), 
+        .out_0_2        (out_0_2),
+        .out_1_0        (out_1_0),
+        .out_1_1        (out_1_1),
+        .out_1_2        (out_1_2),
+        .out_2_0        (out_2_0), 
+        .out_2_1        (out_2_1), 
+        .out_2_2        (out_2_2)
     );
 
     // 控制模块实例化
     conv33_input_ctrl u_input_ctrl (
-        .clk(clk),
-        .rst(rst),
-        .input_valid(input_valid),
-        .inputbuf_load(inputbuf_load),
-        .input_ready(input_ready)
+        .clk            (clk),
+        .rst            (rst),
+        .start          (start),
+        .done           (done),           // 输出完成信号
+        .valid_in       (valid_in),
+        .ready_out      (ready_out),
+        .valid_out      (valid_out),
+        .ready_in       (ready_in),
     );
 
 endmodule

@@ -5,8 +5,8 @@ module conv33_weight_input #(
     input  wire                   rst,
 
     // 串行加载权重数据
-    input  wire                   load_en,
-    input  wire [DATA_WIDTH-1:0]  load_data,
+    input  wire                   start,
+    input  wire [DATA_WIDTH-1:0]  data_in,
 
     // 输出控制
     input  wire                   read_en,
@@ -22,8 +22,8 @@ module conv33_weight_input #(
     output reg  [DATA_WIDTH-1:0]  weight_7,
     output reg  [DATA_WIDTH-1:0]  weight_8,
 
-    output reg                    weight_load,  // 加载完成标志
-    output reg                    valid         // 输出权重有效标志
+    output reg                    weight_load,      // 加载完成标志
+    output reg                    valid_out         // 输出权重有效标志
 );
 
     reg [DATA_WIDTH-1:0] buffer [0:8];
@@ -34,7 +34,7 @@ module conv33_weight_input #(
         if (rst) begin
             load_cnt    <= 0;
             weight_load <= 0;
-        end else if (load_en && load_cnt < 9) begin
+        end else if (start && load_cnt < 9) begin
             buffer[load_cnt] <= load_data;
             load_cnt <= load_cnt + 1;
 
