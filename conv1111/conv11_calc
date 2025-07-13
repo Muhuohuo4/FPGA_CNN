@@ -1,0 +1,75 @@
+module conv11_calc #(
+    parameter DATA_WIDTH = 8,
+    parameter MUL_WIDTH  = 16
+)(
+    input  wire clk,
+    input  wire rst,
+
+    input  wire input_start,
+    output reg  input_done,
+    input  wire weight_start,
+    output reg  weight_done,
+    input  wire calc_start,
+    output reg  calc_done,
+    input  wire output_start,
+    output reg  output_done,
+
+    input  wire input_valid_in,
+    output wire input_ready_out,
+    input  wire weight_valid_in,
+    output wire weight_ready_out,
+    output reg  out_valid_out,
+    input  wire out_ready_in,
+
+    input  wire [DATA_WIDTH-1:0] data_in,
+    input  wire [DATA_WIDTH-1:0] weight_data,
+    output reg  [MUL_WIDTH-1:0]  result
+);
+
+    reg [DATA_WIDTH-1:0] data_buf;
+    reg [DATA_WIDTH-1:0] weight_buf;
+
+    // 输入数据缓存
+    always @(posedge clk) begin
+        if (input_start && input_valid_in) begin
+            data_buf <= data_in;
+            input_done <= 1;
+        end else begin
+            input_done <= 0;
+        end
+    end
+    assign input_ready_out = (input_start);
+
+    // 权重缓存
+    always @(posedge clk) begin
+        if (weight_start && weight_valid_in) begin
+            weight_buf <= weight_data;
+            weight_done <= 1;
+        end else begin
+            weight_done <= 0;
+        end
+    end
+    assign weight_ready_out = (weight_start);
+
+    // 计算
+    always @(posedge clk) begin
+        if (calc_start) begin
+            result <= $signed(data_buf) * $signed(weight_buf);
+            calc_done <= 1;
+        end else begin
+            calc_done <= 0;
+        end
+    end
+
+    // 输出
+    always @(posedge clk) begin
+        if (output_start) begin
+            out_valid_out <= 1;
+            output_done <= out_ready_in;
+        end else begin
+            out_valid_out <= 0;
+            output_done <= 0;
+        end
+    end
+
+endmodule

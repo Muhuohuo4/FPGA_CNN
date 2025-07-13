@@ -19,10 +19,7 @@ module conv11_calc #(
     output reg  signed [DATA_WIDTH-1:0]  result,
     output reg                           valid
 );
-    wire signed [MUL_WIDTH-1:0] mul = data_0_0 * weight_0;
-    wire signed [BIAS_WIDTH-1:0] result_bias = mul + bias;
-    wire signed [BIAS_WIDTH-1:0] result_scale = result_bias * scale;
-    wire signed [OUT_WIDTH-1:0] result_8 = result_scale[23:16];
+    wire signed [MUL_WIDTH-1:0] mul = data_in * weight_0;
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
