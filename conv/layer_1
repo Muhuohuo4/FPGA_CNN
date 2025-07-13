@@ -70,10 +70,10 @@ module layer_1 #(
         .data_out       (sw_in)
     );
     
-    assign fm_write_en = sw_valid_in;
-    assign fm_write_ch = input_ch_idx;
-    assign fm_write_h  = sw_in_h;
-    assign fm_write_w  = sw_in_w;
+    assign fm_read_en = sw_valid_in;
+    assign fm_read_ch = input_ch_idx;
+    assign fm_read_h  = sw_in_h;
+    assign fm_read_w  = sw_in_w;
     
     // === 滑窗 ===
     sliding_window_3x3 #(
@@ -82,8 +82,8 @@ module layer_1 #(
     ) u_sw (
     .clk                (clk),
     .rst                (rst),
-    .valid_in           (sw_valid_in), 
-    .ready_out          (sw_ready_out), 
+    .valid_in           (fm_read_en),           //sw_valid_in
+    .ready_out          (),                     //sw_ready_out
     .valid_out          (sw_valid_out),         // 输出有效
     .ready_in           (sw_ready_in),           
     .data_in            (sw_in),                // 输入像素
@@ -113,7 +113,7 @@ module layer_1 #(
         .rst            (rst),
         .valid_in       (conv33_valid_out),
         .ready_out      (conv33_ready_in),
-        .ready_in       (),//relu_ready_in
+        .ready_in       (fm_write_en),//relu_ready_in
         .valid_out      (),//relu_valid_out
         .data_in        (conv33_result),
         .bias           (bias),

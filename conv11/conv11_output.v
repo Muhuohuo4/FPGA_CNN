@@ -1,42 +1,52 @@
 module conv11_output #(
-    parameter OUT_WIDTH = 8
+    parameter OUT_WIDTH = 32
 )(
     input  wire clk,
     input  wire rst,
+    // 输入握手
+    input  wire                 valid_in,
+    output wire                 ready_out,
+    // 输出握手
+    output reg                  valid_out,
+    input  wire                 ready_in,
+    input  wire start, 
+    output wire done,
 
-    // 来自计算模块
-    input  wire                 in_valid,
-    input  wire [OUT_WIDTH-1:0] in_data,
-
-    // 输出给外部模块
-    output wire                 out_valid,
-    output wire [OUT_WIDTH-1:0] out_data
+    input  wire [OUT_WIDTH-1:0] data_in,
+    output reg  [OUT_WIDTH-1:0] data_out
 );
+    
+    reg [OUT_WIDTH-1:0] buffer;
+    reg buffer_full;
+    assign ready_out = start && ~buffer_full;
 
-    // 中间信号：buffer 和 ctrl 之间
-    wire read_en;
-    wire output_valid;
+    // 接收数据
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            buffer      <= 0;
+            buffer_full <= 0;
+        end else if (start && valid_in && ~buffer_full) begin
+            buffer      <= data_in;
+            buffer_full <= 1;
+        end else if (start && valid_out && ready_in) begin
+            buffer_full <= 0;
+        end
+    end
 
-    // 输出缓存
-    conv11_output_buffer #(
-        .OUT_WIDTH(OUT_WIDTH)
-    ) u_output_buffer (
-        .clk(clk),
-        .rst(rst),
-        .in_valid(in_valid),
-        .in_data (in_data),
-        .read_en(read_en),
-        .out_valid(out_valid),
-        .out_data(out_data)
-    );
+    // 输出逻辑
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            valid_out <= 0;
+            data_out  <= 0;
+        end else if (start && buffer_full && ready_in) begin
+            valid_out <= 1;
+            data_out  <= buffer;
+        end else begin
+            valid_out <= 0;
+        end
+    end
 
-    // 输出控制器
-    conv11_output_ctrl u_output_ctrl (
-        .clk(clk),
-        .rst(rst),
-        .in_valid(in_valid),
-        .read_en(read_en),
-        .output_valid(output_valid) // 预留对外通知使用（可选）
-    );
+    // 输出完成脉冲
+    assign done = valid_out && ready_in;
 
 endmodule

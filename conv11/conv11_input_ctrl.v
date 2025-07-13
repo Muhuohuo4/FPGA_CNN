@@ -1,35 +1,34 @@
 module conv11_input_ctrl (
-    input wire clk,
-    input wire rst,
-    input wire input_valid,
-    input wire inputbuf_load,
+    input   wire    clk,
+    input   wire    rst,
+    input   wire    start,
+    output  reg     done,           // 发送完成
 
-    output reg input_ready
+    input   wire    valid_in,       // 输入数据有效
+    output  wire    ready_out       // 准备接收
 );
+    parameter IDLE  = 1'd0;
+    parameter SEND  = 1'd1;
 
-    parameter IDLE = 2'd0, WAIT = 2'd1, COMPUTE = 2'd2;
-    reg [1:0] state, next;
+    reg state, next;
+    assign ready_out = (state == IDLE);
 
+    // 状态寄存器
     always @(posedge clk or posedge rst) begin
-        if (rst)
+        if (rst) begin
             state <= IDLE;
-        else
+            done  <= 0;
+        end else begin
             state <= next;
+            done  <= (state == SEND);
+        end
     end
 
     always @(*) begin
         next = state;
-        input_ready = 0;
         case (state)
-            IDLE: if (input_valid) next = WAIT;
-            WAIT: if (inputbuf_load) begin
-
-                next = COMPUTE;
-            end
-            COMPUTE: begin
-                input_ready = 1;
-                next = IDLE;
-            end
+            IDLE: if (start) next = SEND;
+            SEND:            next = IDLE;
         endcase
     end
 

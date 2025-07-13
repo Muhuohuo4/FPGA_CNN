@@ -72,7 +72,7 @@ module layer_0 #(
     .clk                (clk),
     .rst                (rst),
     .valid_in           (), 
-    .ready_out          (sw_out_valid), 
+    .ready_out          (), 
     .valid_out          (sw_valid_out),         // 输出有效
     .ready_in           (sw_ready_in),           
     .data_in            (sw_in),                // 输入像素
@@ -83,12 +83,16 @@ module layer_0 #(
     
     // === 卷积 ===
     conv33 u_conv33 (
-    .data_valid_in      (sw_valid_out),        // 来自滑窗
-    .data_ready_out     (sw_ready_in),         // 可留空或连接到滑窗控制
-    .weight_ready_out   (),                    // 暂不需要
-    .weight_valid_in    (),                    // 暂不需要
+    .clk                (clk),
+    .rst                (rst),
+    .start              (conv33_start),             // 卷积开始信号
+    .done               (conv33_done),              // 卷积完成信号
+    .input_valid_in     (sw_valid_out),             // 来自滑窗
+    .input_ready_out    (sw_ready_in),              // 可留空或连接到滑窗控制
+    .weight_valid_in    (),                         // 暂不需要
+    .weight_ready_out   (),                         // 暂不需要
     .out_valid_out      (conv_valid),
-    .out_ready_in       (),                    // 输入数据有效信号
+    .out_ready_in       (1),                        // 输入数据有效信号
     .weight_data        (weight_data),              // 权重加载接口
     .data_in_0_0        (sw_data_00), .data_in_0_1      (sw_data_01), .data_in_0_2      (sw_data_02),
     .data_in_1_0        (sw_data_10), .data_in_1_1      (sw_data_11), .data_in_1_2      (sw_data_12),
