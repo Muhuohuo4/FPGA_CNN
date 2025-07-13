@@ -35,7 +35,7 @@ module conv33_weight_input #(
             load_cnt    <= 0;
             weight_load <= 0;
         end else if (start && load_cnt < 9) begin
-            buffer[load_cnt] <= load_data;
+            buffer[load_cnt] <= data_in;
             load_cnt <= load_cnt + 1;
 
             if (load_cnt == 8)
@@ -53,14 +53,14 @@ module conv33_weight_input #(
             weight_0 <= 0; weight_1 <= 0; weight_2 <= 0;
             weight_3 <= 0; weight_4 <= 0; weight_5 <= 0;
             weight_6 <= 0; weight_7 <= 0; weight_8 <= 0;
-            valid    <= 0;
+            valid_out    <= 0;
         end else if (read_en) begin
             weight_0 <= buffer[0]; weight_1 <= buffer[1]; weight_2 <= buffer[2];
             weight_3 <= buffer[3]; weight_4 <= buffer[4]; weight_5 <= buffer[5];
             weight_6 <= buffer[6]; weight_7 <= buffer[7]; weight_8 <= buffer[8];
-            valid    <= 1;
+            valid_out    <= 1;
         end else begin
-            valid    <= 0;
+            valid_out    <= 0;
         end
     end
 

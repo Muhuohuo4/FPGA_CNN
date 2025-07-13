@@ -5,6 +5,8 @@ module conv33 #(
 )(
     input  wire                   clk,
     input  wire                   rst,
+    input  wire                   start,
+    output wire                   done,
     
     input  wire                   data_valid_in,
     output wire                   data_ready_out,
@@ -112,8 +114,9 @@ module conv33 #(
         .out_1_2            (data_1_2),
         .out_2_0            (data_2_0),
         .out_2_1            (data_2_1),
-        .out_2_2            (data_2_2),
-    ) 
+        .out_2_2            (data_2_2)
+    );
+
     conv33_calc u_calc(
         .clk                (clk),
         .rst                (rst),
@@ -146,12 +149,12 @@ module conv33 #(
     conv33_output u_output(
         .clk                (clk),
         .rst                (rst),
+        .start              (output_en),
+        .done               (weight_load_done), 
         .valid_in           (out_valid_in),
         .ready_out          (out_ready_out),
         .valid_out          (out_valid_out),
         .ready_in           (out_ready_in),
-        .start              (output_en),
-        .done               (weight_load_done), 
         .data_in            (result),
         .data_out           (out_data)
     );
