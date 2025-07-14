@@ -25,7 +25,6 @@ module conv11_calc #(
     input  wire [DATA_WIDTH-1:0] weight_data,
     output reg  [MUL_WIDTH-1:0]  result
 );
-
     reg [DATA_WIDTH-1:0] data_buf;
     reg [DATA_WIDTH-1:0] weight_buf;
 

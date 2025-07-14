@@ -50,7 +50,7 @@ module conv_dw_pw #(
     wire [7:0] relu_out;
 
     // === 控制模块 ===
-    layer_1_ctrl ctrl (
+    layer_1_ctrl ctrl   (
         .clk            (clk),          .rst            (rst),          .start            (start),
         .sw_valid       (sw_valid),     .conv_valid     (conv_valid),   .relu_valid       (relu_valid),
         .sw_start       (sw_start),     .conv_start     (conv_start),   .relu_start       (relu_start),
@@ -142,16 +142,16 @@ module conv_dw_pw #(
     wire out_ready_in_33  = ready_out_relu_33;
     wire signed [31:0] out_data_33 = data_in_relu_33;
     bias_scale_mem #(
-        .LAYER_NUM      (LAYER_DW_NUM),
-        .CH_NUM         (DW_OUT_CH)
-    ) bias_scale_mem_33 (
-        .clk            (clk),
-        .rst            (rst),
-        .start          (bias_scale_start_33),
-        .layer_idx      (bias_scale_layer_33),
-        .ch_idx         (bias_scale_ch_33),
-        .bias_out       (bias_33),
-        .scale_out      (scale_33)
+        .LAYER_NUM          (LAYER_DW_NUM),
+        .CH_NUM             (DW_OUT_CH)
+    ) bias_scale_mem_33     (
+        .clk                (clk),
+        .rst                (rst),
+        .start              (bias_scale_start_33),
+        .layer_idx          (bias_scale_layer_33),
+        .ch_idx             (bias_scale_ch_33),
+        .bias_out           (bias_33),
+        .scale_out          (scale_33)
     );
     bias_scale_relu u_relu33 (
         .clk            (clk),
@@ -194,7 +194,6 @@ module conv_dw_pw #(
         .data_out       (fm_data_out_a)
     );
 
-    assign fm_data_out_a = data_in_a;
     weight_mem #(
         .LAYER_NUM          (LAYER_PW_NUM),
         .IN_CH_NUM          (PW_IN_CH),
@@ -210,17 +209,24 @@ module conv_dw_pw #(
         .valid_out          (valid_out_weight_11),
         .ready_in           (ready_in_weight_11)
     );
+    assign fm_data_out_a = data_in_33;
     wire signed [7:0] weight_out_11 = weight_data_11;
     wire valid_out_weight_11 = weight_valid_in_11;
     wire ready_in_weight_11 = weight_ready_out_11;
-    conv11 u_conv11     (
-        .clk            (clk),
-        .rst            (rst),
-        .start          (pw_start),
-        .pix_in         (dw_pw_data),
-        .pix_valid      (dw_pw_valid),
-        .result         (pw_out),
-        .valid          (pw_valid)
+    conv11 u_conv11 (
+        .clk                (clk),
+        .rst                (rst),
+        .start              (conv11_start),                 // 卷积开始信号
+        .done               (conv11_done),                  // 卷积完成信号
+        .input_valid_in     (input_valid_in_11),            // 来自滑窗
+        .input_ready_out    (input_ready_out_11),           // 可留空或连接到滑窗控制
+        .weight_valid_in    (weight_valid_in_11),           // 暂不需要
+        .weight_ready_out   (weight_ready_out_11),          // 暂不需要
+        .out_valid_out      (out_valid_out_11),
+        .out_ready_in       (out_ready_in_11),              // 输入数据有效信号
+        .weight_data        (weight_data_11),               // 权重加载接口
+        .data_in            (data_in_33)
+        .out_data           (out_data_33)
     );
     bias_scale_mem #(
         .LAYER_NUM      (LAYER_DW_NUM),
