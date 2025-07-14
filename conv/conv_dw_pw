@@ -1,4 +1,4 @@
-module DW_PW #(
+module conv_dw_pw #(
     parameter LAYER_DW_NUM  = 1,
     parameter LAYER_PW_NUM  = 2,
     parameter DW_IN_CH      = 16,
