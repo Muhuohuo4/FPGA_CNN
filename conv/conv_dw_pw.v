@@ -49,11 +49,28 @@ module conv_dw_pw #(
 
     wire [7:0] relu_out;
 
+    // 控制信号连线
+    assign sw_valid  = sw_valid_out_33;
+    assign conv_valid = conv33_done;
+    assign relu_valid = conv11_done;
+
+    wire conv33_start = conv_start;
+    wire conv11_start = relu_start;
+
     // === 控制模块 ===
-    layer_1_ctrl ctrl   (
-        .clk            (clk),          .rst            (rst),          .start            (start),
-        .sw_valid       (sw_valid),     .conv_valid     (conv_valid),   .relu_valid       (relu_valid),
-        .sw_start       (sw_start),     .conv_start     (conv_start),   .relu_start       (relu_start),
+    conv_dw_pw_ctrl #(
+        .DW_IN_CH  (DW_IN_CH),
+        .PW_OUT_CH (PW_OUT_CH)
+    ) u_ctrl (
+        .clk            (clk),
+        .rst            (rst),
+        .start          (start),
+        .sw_valid       (sw_valid),
+        .conv_valid     (conv_valid),
+        .relu_valid     (relu_valid),
+        .sw_start       (sw_start),
+        .conv_start     (conv_start),
+        .relu_start     (relu_start),
         .write_en       (write_en),
         .input_ch_idx   (input_ch_idx),
         .output_ch_idx  (output_ch_idx),
