@@ -4,16 +4,16 @@ module sliding_window_3x3 #(
 )(
     input  wire        clk,
     input  wire        rst,
-
+    input  wire        start,
+    output wire        done,
     // 上游接口
     input  wire        valid_in,
     output wire        ready_out,
-    input  wire [7:0]  data_in,
-
     // 下游接口
     output reg         valid_out,
     input  wire        ready_in,
 
+    input  wire [7:0]  data_in,
     output reg [7:0]   data_out_0,
     output reg [7:0]   data_out_1,
     output reg [7:0]   data_out_2,
@@ -30,7 +30,7 @@ module sliding_window_3x3 #(
     reg [7:0] row, col;
     assign ready_out = ready_in; 
 
-    wire en = valid_in && ready_out;
+    wire en = valid_in && ready_out && start;
     wire accept_output = valid_out && ready_in;
 
     // 判断是否需要输出
@@ -98,6 +98,7 @@ module sliding_window_3x3 #(
     always @(posedge clk or posedge rst) begin
         if (rst)
             valid_out <= 0;
+            done <= 0;
         else if (en) begin
             valid_out <= (row >= 2 && row <= PAD_WIDTH-1) &&
                          (col >= 2 && col <= PAD_WIDTH-1) &&
