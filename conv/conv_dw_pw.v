@@ -228,6 +228,19 @@ module conv_dw_pw #(
         .data_in            (data_in_33)
         .out_data           (out_data_33)
     );
+    adder_tree_top #(
+        .CHANNELS           (PW_OUT_CH)
+    ) u_adder_tree_top (
+        .clk                (clk),
+        .rst                (rst),
+        .valid_in           (valid_in_adder),
+        .ready_out          (ready_out_adder),                // 恒为 1，也可以接给 conv11 控制
+        .valid_out          (valid_out_adder),
+        .in_index           (in_index_adder),  // 通道序号 0 ~ 127
+        .data_in            (data_in_adder),     // 每拍一个通道数据
+        .data_out           (data_out_adder)         // 所有通道累加结果（仅 sum_valid = 1 时有效）
+    );
+
     bias_scale_mem #(
         .LAYER_NUM      (LAYER_DW_NUM),
         .CH_NUM         (DW_OUT_CH)
