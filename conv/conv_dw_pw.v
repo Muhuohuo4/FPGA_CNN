@@ -1,17 +1,12 @@
 module conv_dw_pw #(
-    parameter LAYER_DW_NUM  = 1,
-    parameter LAYER_PW_NUM  = 2,
-    parameter DW_IN_CH      = 16,
-    parameter DW_IN_HW      = 64,
-    parameter DW_OUT_CH     = 16,
-    parameter DW_OUT_HW     = 64,
-    parameter DW_STRIDE     = 1,
-    parameter PW_IN_CH      = 16,
-    parameter PW_IN_HW      = 64,
-    parameter PW_OUT_CH     = 32,
-    parameter PW_OUT_HW     = 64,
-    parameter BIAS_WIDTH    = 32,
-    parameter SCALE_WIDTH   = 16
+    parameter LAYER_DW_NUM  = 1,    parameter DW_STRIDE     = 1,    
+    parameter DW_IN_CH      = 16,   parameter DW_IN_HW      = 64,
+    parameter DW_OUT_CH     = 16,   parameter DW_OUT_HW     = 64,
+    parameter LAYER_PW_NUM  = 2,    
+    parameter PW_IN_CH      = 16,   parameter PW_IN_HW      = 64,   
+    parameter PW_OUT_CH     = 32,   parameter PW_OUT_HW     = 64,
+    parameter DATA_WIDTH    = 8,   
+    parameter BIAS_WIDTH    = 32,   parameter SCALE_WIDTH   = 16
 )(
     input  wire        clk,
     input  wire        rst,
@@ -20,42 +15,38 @@ module conv_dw_pw #(
     output wire [7:0]  dout,
     output wire        dout_valid
 );
+    //定义
+    
+    
+    //数据连接
+    assign fm_data_out_b    = sw_data_in_33;
+    assign weight_out_33    = weight_data_33;
+    assign out_data_33      = data_in_relu_33;
+    assign data_out_relu_33 = fm_data_in_b;
+    assign fm_data_out_a    = data_in_11;
+    assign weight_out_11    = weight_data_11;
+    assign out_data_11      = data_in_adder;
+    assign data_out_adder   = data_in_relu_11;
+    assign data_out_relu_11 = fm_data_in_a;
 
-    // === 控制信号 ===
-    wire sw_start, conv_start, relu_start, write_en;
-    wire sw_valid, conv_valid, relu_valid;
+    //信号连接
+    
+    assign sw_valid_out_33 = input_valid_in_33;
+    assign sw_ready_in_33  = input_ready_out_33;
+    assign valid_out_weight_33 = weight_valid_in_33;
+    assign ready_in_weight_33 = weight_ready_out_33;
+    assign out_valid_out_33 = valid_in_relu_33;
+    assign out_ready_in_33  = ready_out_relu_33;
+    assign valid_out_weight_11 = weight_valid_in_11;
+    assign ready_in_weight_11 = weight_ready_out_11;
 
-    wire [1:0]  input_ch_idx;
-    wire [3:0]  output_ch_idx;
+    //控制信号
+        
 
-    wire        bias_scale_start_33;
-    wire [4:0]  bias_scale_layer_33;
-    wire [9:0]  bias_scale_ch_33;
-    wire        bias_scale_start_11;
-    wire [4:0]  bias_scale_layer_11;
-    wire [9:0]  bias_scale_ch_11;
 
-    wire signed [7:0]  sw_data_00, sw_data_01, sw_data_02;
-    wire signed [7:0]  sw_data_10, sw_data_11, sw_data_12;
-    wire signed [7:0]  sw_data_20, sw_data_21, sw_data_22;
 
-    wire signed [15:0] conv_result;
-    reg  signed [15:0] acc_result;
 
-    wire signed [BIAS_WIDTH-1:0]    bias_33;
-    wire signed [BIAS_WIDTH-1:0]    bias_11;
-    wire signed [SCALE_WIDTH-1:0]   scale_33;
-    wire signed [SCALE_WIDTH-1:0]   scale_11;
 
-    wire [7:0] relu_out;
-
-    // 控制信号连线
-    assign sw_valid  = sw_valid_out_33;
-    assign conv_valid = conv33_done;
-    assign relu_valid = conv11_done;
-
-    wire conv33_start = conv_start;
-    wire conv11_start = relu_start;
 
     // === 控制模块 ===
     conv_dw_pw_ctrl #(
@@ -65,22 +56,13 @@ module conv_dw_pw #(
         .clk            (clk),
         .rst            (rst),
         .start          (start),
-        .sw_valid       (sw_valid),
-        .conv_valid     (conv_valid),
-        .relu_valid     (relu_valid),
-        .sw_start       (sw_start),
-        .conv_start     (conv_start),
-        .relu_start     (relu_start),
-        .write_en       (write_en),
-        .input_ch_idx   (input_ch_idx),
-        .output_ch_idx  (output_ch_idx),
         .done           (done)
     );
     
     feature_map_buffer #(
-        .WRITE_H            (OUT_HW),
-        .WRITE_W            (OUT_HW),
-        .WRITE_C            (OUT_CH),
+        .WRITE_H            (DW_OUT_HW),
+        .WRITE_W            (DW_OUT_HW),
+        .WRITE_C            (DW_OUT_CH),
         .READ_H             (DW_IN_HW),
         .READ_W             (DW_IN_HW),
         .READ_C             (DW_IN_CH),
@@ -99,8 +81,6 @@ module conv_dw_pw #(
         .data_in            (fm_data_in_b),
         .data_out           (fm_data_out_b)
     );
-    
-    assign fm_data_out_b = sw_data_in_33;
 
     // === 滑窗 ===
     sliding_window_3x3 #(
@@ -118,6 +98,7 @@ module conv_dw_pw #(
         .data_out_3         (sw_data_10), .data_out_4       (sw_data_11), .data_out_5       (sw_data_12),
         .data_out_6         (sw_data_20), .data_out_7       (sw_data_21), .data_out_8       (sw_data_22)
     );
+
     weight_mem #(
         .LAYER_NUM          (LAYER_DW_NUM),
         .IN_CH_NUM          (DW_IN_CH),
@@ -133,11 +114,7 @@ module conv_dw_pw #(
         .valid_out          (valid_out_weight_33),
         .ready_in           (ready_in_weight_33)
     );
-    wire sw_valid_out_33 = input_valid_in_33;
-    wire sw_ready_in_33  = input_ready_out_33;
-    wire signed [7:0] weight_out_33 = weight_data_33;
-    wire valid_out_weight_33 = weight_valid_in_33;
-    wire ready_in_weight_33 = weight_ready_out_33;
+
     conv33 u_conv33 (
         .clk                (clk),
         .rst                (rst),
@@ -155,9 +132,7 @@ module conv_dw_pw #(
         .data_in_2_0        (sw_data_20), .data_in_2_1      (sw_data_21), .data_in_2_2      (sw_data_22),
         .out_data           (out_data_33)
     );
-    wire out_valid_out_33 = valid_in_relu_33;
-    wire out_ready_in_33  = ready_out_relu_33;
-    wire signed [31:0] out_data_33 = data_in_relu_33;
+
     bias_scale_mem #(
         .LAYER_NUM          (LAYER_DW_NUM),
         .CH_NUM             (DW_OUT_CH)
@@ -183,18 +158,13 @@ module conv_dw_pw #(
         .data_out       (data_out_relu_33)
     );
 
-    wire [7:0] data_out_relu_33 = fm_data_in_b;
-
-    assign ready_in_relu_33 = 1;  
-    assign valid_out_relu_33 = 1; 
-
     feature_map_buffer #(
-        .WRITE_H        (OUT_HW),
-        .WRITE_W        (OUT_HW),
-        .WRITE_C        (OUT_CH),
-        .READ_H         (IN_HW),
-        .READ_W         (IN_HW),
-        .READ_C         (IN_CH),
+        .WRITE_H        (PW_OUT_HW),
+        .WRITE_W        (PW_OUT_HW),
+        .WRITE_C        (PW_OUT_CH),
+        .READ_H         (PW_IN_HW),
+        .READ_W         (PW_IN_HW),
+        .READ_C         (PW_IN_CH),
         .mode_sel       (1)                 // a写b读
     ) u_feature_map_a   (
         .clk            (clk),
@@ -226,10 +196,7 @@ module conv_dw_pw #(
         .valid_out          (valid_out_weight_11),
         .ready_in           (ready_in_weight_11)
     );
-    assign fm_data_out_a = data_in_33;
-    wire signed [7:0] weight_out_11 = weight_data_11;
-    wire valid_out_weight_11 = weight_valid_in_11;
-    wire ready_in_weight_11 = weight_ready_out_11;
+
     conv11 u_conv11 (
         .clk                (clk),
         .rst                (rst),
@@ -242,8 +209,8 @@ module conv_dw_pw #(
         .out_valid_out      (out_valid_out_11),
         .out_ready_in       (out_ready_in_11),              // 输入数据有效信号
         .weight_data        (weight_data_11),               // 权重加载接口
-        .data_in            (data_in_33)
-        .out_data           (out_data_33)
+        .data_in            (data_in_11)
+        .out_data           (out_data_11)
     );
     adder_tree_top #(
         .CHANNELS           (PW_OUT_CH)
