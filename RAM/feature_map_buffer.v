@@ -49,7 +49,7 @@ module feature_map_buffer #(
     always @(posedge clk) begin
         if (read_en) begin
             if (mode_sel == 1'b0)
-                data_out <= bram_b[read_addr];  // 注意读的是“另一块”
+                data_out <= bram_b[read_addr];
             else
                 data_out <= bram_a[read_addr];
         end

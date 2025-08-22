@@ -46,8 +46,6 @@ module conv_dw_pw #(
 
 
 
-
-
     // === 控制模块 ===
     conv_dw_pw_ctrl #(
         .DW_IN_CH  (DW_IN_CH),
@@ -218,11 +216,11 @@ module conv_dw_pw #(
         .clk                (clk),
         .rst                (rst),
         .valid_in           (valid_in_adder),
-        .ready_out          (ready_out_adder),                // 恒为 1，也可以接给 conv11 控制
+        .ready_out          (ready_out_adder),              // 恒为 1，也可以接给 conv11 控制
         .valid_out          (valid_out_adder),
-        .in_index           (in_index_adder),  // 通道序号 0 ~ 127
-        .data_in            (data_in_adder),     // 每拍一个通道数据
-        .data_out           (data_out_adder)         // 所有通道累加结果（仅 sum_valid = 1 时有效）
+        .in_index           (in_index_adder),               // 通道序号 0 ~ 127
+        .data_in            (data_in_adder),                // 每拍一个通道数据
+        .data_out           (data_out_adder)                // 所有通道累加结果（仅 sum_valid = 1 时有效）
     );
 
     bias_scale_mem #(

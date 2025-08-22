@@ -21,7 +21,7 @@ module cnn_top (
         .done(done)
     );
 
-    // 第0层（conv_0）例化
+    // 第0层例化
     conv_layer conv_0 (
         .clk(clk),
         .rst(rst),

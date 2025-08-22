@@ -18,10 +18,10 @@ module weight_mem #(
 );
     localparam ADDR_WIDTH = 14;     //$clog2(TOTAL_NUM);
 
-    reg [WEIGHT_WIDTH-1:0] weight_rom [0:16384-1];
+    reg [WEIGHT_WIDTH-1:0] weight_rom [0:36864-1];
     initial $readmemh("weight.mem", weight_rom);
 
-    reg [$clog2(KERNEL_SIZE):0] k_idx;
+    reg [$clog2(KERNEL_SIZE)-1:0] k_idx;
     reg [ADDR_WIDTH-1:0] base_addr;
     reg busy;
 
