@@ -12,7 +12,7 @@ module bias_scale_mem #(
     input  wire [9:0]               ch_idx,      // 通道编号
     output reg  [BIAS_WIDTH-1:0]    bias_out,
     output reg  [SCALE_WIDTH-1:0]   scale_out,
-    output reg                      valid_out    // 可选：输出有效（与数据对齐）
+    output reg                      valid_out   
 );
     // 派生位宽
     localparam integer TOTAL_NUM  = LAYER_NUM * CH_NUM;

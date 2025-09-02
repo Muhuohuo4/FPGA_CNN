@@ -37,7 +37,7 @@ module conv33_input_buffer #(
             buf_0_0 <= 0; buf_0_1 <= 0; buf_0_2 <= 0;
             buf_1_0 <= 0; buf_1_1 <= 0; buf_1_2 <= 0;
             buf_2_0 <= 0; buf_2_1 <= 0; buf_2_2 <= 0;
-            
+               
         end else if (valid_in && ready_out) begin
             buf_0_0 <= in_0_0; buf_0_1 <= in_0_1; buf_0_2 <= in_0_2;
             buf_1_0 <= in_1_0; buf_1_1 <= in_1_1; buf_1_2 <= in_1_2;
